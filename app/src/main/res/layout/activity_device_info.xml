@@ -37,6 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="356dp"
             android:id="@+id/photoListView" />
+
     </LinearLayout>
 
 </RelativeLayout>

@@ -3,5 +3,6 @@
     <string-array name="fragments_array">
         <item>Home</item>
         <item>Device Infos</item>
+        <item>Folder selection</item>
     </string-array>
 </resources>

@@ -11,8 +11,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.File;
+
 import de.jbi.photosync.R;
-import de.jbi.photosync.fragments.EmptyFragment;
+import de.jbi.photosync.content.DataContentHandler;
+import de.jbi.photosync.fragments.DashboardFragment;
+import de.jbi.photosync.fragments.DeviceInfoFragment;
+import de.jbi.photosync.fragments.FolderSelectionFragment;
+import de.jbi.photosync.utils.Folder;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -37,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
+        // TODO delete me
+        File picturesFile = new File("/storage/emulated/0/Pictures/Leute");
+        Folder folder = new Folder(picturesFile, picturesFile.getName(), 10, picturesFile.getTotalSpace(), true);
+        DataContentHandler.getInstance().addSelectedFolder(folder);
+
         if (savedInstanceState == null) {
             selectItem(0);
         }
@@ -52,10 +63,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectItem(int position) {
         // update the main content by replacing fragments
-        Fragment fragment = new EmptyFragment();
-        Bundle args = new Bundle();
-        args.putInt(EmptyFragment.ARG_FRAGMENT_NUMBER, position);
-        fragment.setArguments(args);
+        Fragment fragment;
+        switch (position) {
+            case 0:
+                fragment = new DashboardFragment();
+                handleDashboardFragment(fragment, position);
+                break;
+            case 1:
+                fragment = new DeviceInfoFragment();
+                break;
+            case 2:
+                fragment = new FolderSelectionFragment();
+                break;
+            default:
+                fragment = new DashboardFragment();
+                handleDashboardFragment(fragment, position);
+                break;
+        }
 
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getFragmentManager();
@@ -67,6 +91,12 @@ public class MainActivity extends AppCompatActivity {
         drawerList.setItemChecked(position, true);
         setTitle(fragmentTitles[position]);
         drawerLayout.closeDrawer(drawerList);
+    }
+
+    private void handleDashboardFragment(Fragment fragment, int position) {
+        Bundle args = new Bundle();
+        args.putInt(DashboardFragment.ARG_FRAGMENT_NUMBER, position);
+        fragment.setArguments(args);
     }
 
     @Override
@@ -186,9 +216,9 @@ public class MainActivity extends AppCompatActivity {
 //
 //    private void selectItem(int position) {
 //        // update the main content by replacing fragments
-//        Fragment fragment = new EmptyFragment();
+//        Fragment fragment = new DashboardFragment();
 //        Bundle args = new Bundle();
-//        args.putInt(EmptyFragment.ARG_FRAGMENT_NUMBER, position);
+//        args.putInt(DashboardFragment.ARG_FRAGMENT_NUMBER, position);
 //        fragment.setArguments(args);
 //
 //        FragmentManager fragmentManager = getFragmentManager();
@@ -228,17 +258,17 @@ public class MainActivity extends AppCompatActivity {
 //    /**
 //     * Fragment that appears in the "content_frame", shows a planet
 //     */
-//    public static class EmptyFragment extends Fragment {
+//    public static class DashboardFragment extends Fragment {
 //        public static final String ARG_FRAGMENT_NUMBER = "planet_number";
 //
-//        public EmptyFragment() {
+//        public DashboardFragment() {
 //            // Empty constructor required for fragment subclasses
 //        }
 //
 //        @Override
 //        public View onCreateView(LayoutInflater inflater, ViewGroup container,
 //                                 Bundle savedInstanceState) {
-//            View rootView = inflater.inflate(R.layout.fragment_empty, container, false);
+//            View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
 //            int i = getArguments().getInt(ARG_FRAGMENT_NUMBER);
 //            String planet = getResources().getStringArray(R.array.planets_array)[i];
 //

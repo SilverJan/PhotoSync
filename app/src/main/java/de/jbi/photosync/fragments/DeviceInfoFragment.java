@@ -1,9 +1,13 @@
-package de.jbi.photosync.activities;
+package de.jbi.photosync.fragments;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -16,25 +20,34 @@ import de.jbi.photosync.utils.AndroidUtil;
 
 import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
 
-@Deprecated
-public class DeviceInfoActivity extends AppCompatActivity {
+/**
+ * Created by Jan on 14.05.2016.
+ */
+public class DeviceInfoFragment extends Fragment {
+    private Activity activity;
+    private Context ctx;
+    private View rootView;
 
-    private static Context ctx;
+    public DeviceInfoFragment() {
+        // Empty constructor required for fragment subclasses
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        ctx = getApplicationContext();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.activity_device_info, container, false);
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_device_info);
+        activity = getActivity();
+        ctx = activity.getApplicationContext();
 
         setInfoTextViews();
-
         setPhotoView();
+
+        return rootView;
     }
 
     private void setInfoTextViews() {
-        TextView accessTV = (TextView) findViewById(R.id.accessInfoTextView);
+
+        TextView accessTV = (TextView) rootView.findViewById(R.id.accessInfoTextView);
         accessTV.setText("Access info: ");
         if (AndroidUtil.isExternalStorageReadable()) {
             accessTV.append("SD card access granted!");
@@ -42,7 +55,7 @@ public class DeviceInfoActivity extends AppCompatActivity {
             accessTV.append("SD card access denied!");
         }
 
-        TextView fileDirTV = (TextView) findViewById(R.id.fileDirTextView);
+        TextView fileDirTV = (TextView) rootView.findViewById(R.id.fileDirTextView);
         fileDirTV.setText("Files dir: " + ctx.getFilesDir().getAbsolutePath());
         fileDirTV.append("\nData dir: " + Environment.getDataDirectory());
         fileDirTV.append("\nRoot dir: " + Environment.getRootDirectory());
@@ -56,13 +69,12 @@ public class DeviceInfoActivity extends AppCompatActivity {
     private void setPhotoView() {
         ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory());
         ArrayList<File> severalPhotos = new ArrayList<>();
-        for (int i = 0; i != 10; i++) {
+        for (int i = 0; i != 2; i++) {
             severalPhotos.add(allPhotos.get(i));
         }
 
         PhotoArrayAdapter photoAdapter = new PhotoArrayAdapter(ctx, R.layout.list_photo_item, severalPhotos);
-
-        ListView listView = (ListView) findViewById(R.id.photoListView);
+        ListView listView = (ListView) rootView.findViewById(R.id.photoListView);
         listView.setAdapter(photoAdapter);
     }
 }
