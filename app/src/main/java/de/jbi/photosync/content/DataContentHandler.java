@@ -31,16 +31,14 @@ public class DataContentHandler {
 
     public void addSelectedFolder(Folder folder) {
         if (selectedFolders.contains(folder)) {
-            // TODO: Logging?
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Folder already exists!");
         }
 
         selectedFolders.add(folder);
     }
 
-    public void deleteSelectedFolder(Folder folder) {
+    public void removeSelectedFolder(Folder folder) {
         if (!selectedFolders.contains(folder)) {
-            // TODO: Logging?
             throw new IllegalArgumentException();
         }
 

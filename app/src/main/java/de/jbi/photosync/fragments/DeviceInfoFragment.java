@@ -34,7 +34,7 @@ public class DeviceInfoFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.activity_device_info, container, false);
+        rootView = inflater.inflate(R.layout.fragment_device_info, container, false);
 
         activity = getActivity();
         ctx = activity.getApplicationContext();

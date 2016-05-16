@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import de.jbi.photosync.R;
+import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.utils.Folder;
 
 /**
@@ -25,7 +26,7 @@ public class FolderArrayAdapter extends ArrayAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View view = convertView;
 
         if (view == null) {
@@ -33,19 +34,31 @@ public class FolderArrayAdapter extends ArrayAdapter {
             view = inflater.inflate(R.layout.list_folder_item, null);
         }
 
-        TextView fileNameTV = (TextView) view.findViewById(R.id.folderTableFileNameTextView);
-        TextView filePathTV = (TextView) view.findViewById(R.id.folderTableFilePathTextView);
-        TextView fileSizeTV = (TextView) view.findViewById(R.id.folderTableSizeTextView);
-        Button fileRemoveButton = (Button) view.findViewById(R.id.folderTableRemoveButton);
+        TextView fileNameTV = (TextView) view.findViewById(R.id.folderFileNameTextView);
+        TextView filePathTV = (TextView) view.findViewById(R.id.folderFilePathTextView);
+        TextView fileSizeTV = (TextView) view.findViewById(R.id.folderFileSizeTextView);
+        Button fileRemoveButton = (Button) view.findViewById(R.id.folderRemoveButton);
 
         Folder positionedFolder = folders.get(position);
 
         fileNameTV.setText(positionedFolder.getName());
         filePathTV.setText(positionedFolder.getAbsolutePath().getAbsolutePath());
-        fileSizeTV.setText(positionedFolder.getContentAmount());
+//        fileSizeTV.setText(positionedFolder.getContentAmount()); FIXME id not found exception
 
-        // TODO add remove button handling
+        fileRemoveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                handleRemoveFolder(position);
+            }
+        });
 
         return view;
+    }
+
+    private void handleRemoveFolder(int position) {
+        DataContentHandler dataContentHandler = DataContentHandler.getInstance();
+        Folder folderToBeDeleted = dataContentHandler.getSelectedFolders().get(position);
+        dataContentHandler.removeSelectedFolder(folderToBeDeleted);
+        this.notifyDataSetChanged();
     }
 }

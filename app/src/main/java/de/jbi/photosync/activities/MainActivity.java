@@ -11,14 +11,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.io.File;
-
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.fragments.DashboardFragment;
 import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
-import de.jbi.photosync.utils.Folder;
+import de.jbi.photosync.utils.MockFolder;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -37,16 +35,14 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
 
-        drawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, fragmentTitles));
+        drawerList.setAdapter(new ArrayAdapter<>(this, R.layout.list_drawer_item, fragmentTitles));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
         // TODO delete me
-        File picturesFile = new File("/storage/emulated/0/Pictures/Leute");
-        Folder folder = new Folder(picturesFile, picturesFile.getName(), 10, picturesFile.getTotalSpace(), true);
-        DataContentHandler.getInstance().addSelectedFolder(folder);
+        DataContentHandler.getInstance().addSelectedFolder(MockFolder.mockFolderA);
 
         if (savedInstanceState == null) {
             selectItem(0);
@@ -107,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 }
 
 
-// TODO: Handle: drawer_list_item.xml, fragment_emptyxml, strings entries
+// TODO: Handle: list_drawer_item.xml, fragment_emptyxml, strings entries
 
 
 //    private DrawerLayout drawerLayout;
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 ////        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 //        // set up the drawer's list view with items and click listener
 //        drawerList.setAdapter(new ArrayAdapter<>(this,
-//                R.layout.drawer_list_item, fragmentTitles));
+//                R.layout.list_drawer_item, fragmentTitles));
 //        drawerList.setOnItemClickListener(new DrawerItemClickListener());
 //
 //        // enable ActionBar app icon to behave as action to toggle nav drawer

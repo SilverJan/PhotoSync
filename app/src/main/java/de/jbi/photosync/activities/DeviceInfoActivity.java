@@ -26,7 +26,7 @@ public class DeviceInfoActivity extends AppCompatActivity {
         ctx = getApplicationContext();
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_device_info);
+        setContentView(R.layout.fragment_device_info);
 
         setInfoTextViews();
 
