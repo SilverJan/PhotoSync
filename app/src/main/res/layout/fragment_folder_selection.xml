@@ -9,6 +9,17 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"></LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/fragment_folder_selection_long_press_info"
+        android:layout_gravity="center"/>
+
+    <!-- Info boxes -->
+    <include layout="@layout/list_folder_item"
+        android:id="@+id/infoTemplate"></include>
+
+    <!-- Folder container -->
     <ListView
         android:id="@+id/folderContainerListView"
         android:layout_width="match_parent"
@@ -19,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Add folder"
+        android:text="@string/fragment_folder_selection_add_folder"
         android:id="@+id/addFolderButton" />
 
 </LinearLayout>

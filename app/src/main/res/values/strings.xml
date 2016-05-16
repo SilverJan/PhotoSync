@@ -5,4 +5,8 @@
         <item>Device Infos</item>
         <item>Folder selection</item>
     </string-array>
+
+    <!-- Folder selection fragment -->
+    <string name="fragment_folder_selection_long_press_info">Long-press a row for more information\n</string>
+    <string name="fragment_folder_selection_add_folder">Add folder</string>
 </resources>

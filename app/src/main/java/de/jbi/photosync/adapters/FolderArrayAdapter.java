@@ -7,12 +7,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.utils.Folder;
+
+import static de.jbi.photosync.content.DataContentHandler.getInstance;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -34,16 +39,32 @@ public class FolderArrayAdapter extends ArrayAdapter {
             view = inflater.inflate(R.layout.list_folder_item, null);
         }
 
+        // ##########################
+        // ### SET FOLDER DETAILS ###
+        // ##########################
+
         TextView fileNameTV = (TextView) view.findViewById(R.id.folderFileNameTextView);
-        TextView filePathTV = (TextView) view.findViewById(R.id.folderFilePathTextView);
-        TextView fileSizeTV = (TextView) view.findViewById(R.id.folderFileSizeTextView);
+        TextView fileAmountTV = (TextView) view.findViewById(R.id.folderFileAmountTextView);
         Button fileRemoveButton = (Button) view.findViewById(R.id.folderRemoveButton);
 
         Folder positionedFolder = folders.get(position);
 
         fileNameTV.setText(positionedFolder.getName());
-        filePathTV.setText(positionedFolder.getAbsolutePath().getAbsolutePath());
-//        fileSizeTV.setText(positionedFolder.getContentAmount()); FIXME id not found exception
+        fileAmountTV.setText(Integer.toString(positionedFolder.getChildAmount()));
+
+        // #######################
+        // ### CLICK LISTENERS ###
+        // #######################
+
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String folderPath = getInstance().getSelectedFolders().get(position).getAbsolutePath().getPath();
+                Toast.makeText(getContext(), folderPath , Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+        });
 
         fileRemoveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,7 +77,7 @@ public class FolderArrayAdapter extends ArrayAdapter {
     }
 
     private void handleRemoveFolder(int position) {
-        DataContentHandler dataContentHandler = DataContentHandler.getInstance();
+        DataContentHandler dataContentHandler = getInstance();
         Folder folderToBeDeleted = dataContentHandler.getSelectedFolders().get(position);
         dataContentHandler.removeSelectedFolder(folderToBeDeleted);
         this.notifyDataSetChanged();

@@ -19,12 +19,21 @@ public class AndroidUtil {
         return false;
     }
 
-    public static List<File> getAllPhotos(File parentDir) {
+    /**
+     * Returns a list of all .jepg and .jpg files in a directory
+     *
+     * @param parentDir The parent directory to search in
+     * @param recursive Pass true, if recursive search should be allowed
+     * @return
+     */
+    public static List<File> getAllPhotos(File parentDir, Boolean recursive) {
         ArrayList<File> inFiles = new ArrayList<>();
         File[] files = parentDir.listFiles();
         for (File file : files) {
             if (file.isDirectory()) {
-                inFiles.addAll(getAllPhotos(file));
+                if (recursive) {
+                    inFiles.addAll(getAllPhotos(file, true));
+                }
             } else {
                 if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) {
                     inFiles.add(file);
@@ -32,5 +41,26 @@ public class AndroidUtil {
             }
         }
         return inFiles;
+    }
+
+    /**
+     * Returns the amount of child elements in a directory. Directories are ignored
+     *
+     * @param dir       The parent directory to search in
+     * @param recursive Pass true, if recursive search should be allowed
+     * @return
+     */
+    public static int getDirectoryElements(File dir, Boolean recursive) {
+        int amount = 0;
+        for (final File fileEntry : dir.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                if (recursive) {
+                    getDirectoryElements(fileEntry, true);
+                }
+            } else {
+                amount++;
+            }
+        }
+        return amount;
     }
 }

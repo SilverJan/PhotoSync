@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/folderFileNameTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:padding="3dip"
-        android:text="File name" />
+        android:text="File name\n" />
 
     <TextView
-        android:id="@+id/folderFilePathTextView"
-        android:layout_width="wrap_content"
+        android:id="@+id/folderFileAmountTextView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:padding="3dip"
-        android:text="File path" />
-
-    <TextView
-        android:id="@+id/folderFileSizeTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="3dip"
-        android:text="Size" />
+        android:text="Amount\n" />
 
     <Button
         android:id="@+id/folderRemoveButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:padding="3dip"
         android:text="Remove" />
 </LinearLayout>

@@ -48,13 +48,13 @@ public class DeviceInfoActivity extends AppCompatActivity {
         fileDirTV.append("\nRoot dir: " + Environment.getRootDirectory());
         fileDirTV.append("\nExt dir: " + Environment.getExternalStorageDirectory());
 
-        File firstPic = getAllPhotos(Environment.getExternalStorageDirectory()).get(0);
+        File firstPic = getAllPhotos(Environment.getExternalStorageDirectory(), false).get(0);
 
         fileDirTV.append(firstPic.toString());
     }
 
     private void setPhotoView() {
-        ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory());
+        ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory(), false);
         ArrayList<File> severalPhotos = new ArrayList<>();
         for (int i = 0; i != 10; i++) {
             severalPhotos.add(allPhotos.get(i));

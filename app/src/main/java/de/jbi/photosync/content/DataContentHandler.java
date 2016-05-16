@@ -30,7 +30,15 @@ public class DataContentHandler {
     }
 
     public void addSelectedFolder(Folder folder) {
-        if (selectedFolders.contains(folder)) {
+        Boolean exists = false;
+        for (Folder selFolder : selectedFolders) {
+            if (selFolder.getAbsolutePath().getPath().equals(folder.getAbsolutePath().getPath())) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (selectedFolders.contains(folder) || exists) {
             throw new IllegalArgumentException("Folder already exists!");
         }
 

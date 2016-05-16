@@ -2,25 +2,35 @@ package de.jbi.photosync.utils;
 
 import java.io.File;
 
+import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
+
 /**
  * Created by Jan on 14.05.2016.
  */
 public class Folder {
-    private String name;
-
     private File absolutePath;
 
-    private int contentAmount;
+    private String name;
+
+    private int childAmount;
 
     private long size;
 
     private Boolean selected;
 
-    public Folder(File absolutePath, String name, int contentAmount, long size, Boolean selected) {
+    public Folder(File absolutePath, String name, int childAmount, long size, Boolean selected) {
         this.absolutePath = absolutePath;
         this.name = name;
-        this.contentAmount = contentAmount;
+        this.childAmount = childAmount;
         this.size = size;
+        this.selected = selected;
+    }
+
+    public Folder(File file, Boolean selected) {
+        this.absolutePath = file.getAbsoluteFile();
+        this.name = file.getName();
+        this.childAmount = getAllPhotos(file, false).size();
+        this.size = file.getTotalSpace();
         this.selected = selected;
     }
 
@@ -50,12 +60,12 @@ public class Folder {
     /**
      * The amount of files inside of the folder
      */
-    public int getContentAmount() {
-        return contentAmount;
+    public int getChildAmount() {
+        return childAmount;
     }
 
-    public void setContentAmount(int contentAmount) {
-        this.contentAmount = contentAmount;
+    public void setChildAmount(int childAmount) {
+        this.childAmount = childAmount;
     }
 
     /**

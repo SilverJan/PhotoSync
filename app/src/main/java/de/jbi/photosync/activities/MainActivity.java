@@ -41,9 +41,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
-        // TODO delete me
-        DataContentHandler.getInstance().addSelectedFolder(MockFolder.mockFolderA);
-
         if (savedInstanceState == null) {
             selectItem(0);
         }
