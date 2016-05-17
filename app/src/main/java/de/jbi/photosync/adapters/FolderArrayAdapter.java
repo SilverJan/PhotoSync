@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
+import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.utils.Folder;
 
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
@@ -78,8 +79,11 @@ public class FolderArrayAdapter extends ArrayAdapter {
 
     private void handleRemoveFolder(int position) {
         DataContentHandler dataContentHandler = getInstance();
-        Folder folderToBeDeleted = dataContentHandler.getSelectedFolders().get(position);
-        dataContentHandler.removeSelectedFolder(folderToBeDeleted);
+        Folder folderToBeRemoved = dataContentHandler.getSelectedFolders().get(position);
+
+        dataContentHandler.removeSelectedFolder(folderToBeRemoved);
+        SharedPreferencesUtil.removeFolder(getContext(), folderToBeRemoved);
+
         this.notifyDataSetChanged();
     }
 }

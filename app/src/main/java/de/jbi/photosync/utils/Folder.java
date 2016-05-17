@@ -1,6 +1,7 @@
 package de.jbi.photosync.utils;
 
 import java.io.File;
+import java.util.UUID;
 
 import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
 
@@ -8,6 +9,8 @@ import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
  * Created by Jan on 14.05.2016.
  */
 public class Folder {
+    private UUID id;
+
     private File absolutePath;
 
     private String name;
@@ -19,6 +22,7 @@ public class Folder {
     private Boolean selected;
 
     public Folder(File absolutePath, String name, int childAmount, long size, Boolean selected) {
+        this.id = UUID.randomUUID();
         this.absolutePath = absolutePath;
         this.name = name;
         this.childAmount = childAmount;
@@ -27,6 +31,7 @@ public class Folder {
     }
 
     public Folder(File file, Boolean selected) {
+        this.id = UUID.randomUUID();
         this.absolutePath = file.getAbsoluteFile();
         this.name = file.getName();
         this.childAmount = getAllPhotos(file, false).size();
@@ -34,6 +39,9 @@ public class Folder {
         this.selected = selected;
     }
 
+    public UUID getId() {
+        return id;
+    }
 
     /**
      * The name of the folder

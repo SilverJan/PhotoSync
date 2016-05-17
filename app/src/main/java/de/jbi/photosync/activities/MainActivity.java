@@ -11,12 +11,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.List;
+
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
+import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.fragments.DashboardFragment;
 import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
-import de.jbi.photosync.utils.MockFolder;
+import de.jbi.photosync.utils.Folder;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        List<Folder> initialFolders = SharedPreferencesUtil.getFolders(this);
+        DataContentHandler.getInstance().setSelectedFolders(initialFolders);
 
         fragmentTitles = getResources().getStringArray(R.array.fragments_array);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);

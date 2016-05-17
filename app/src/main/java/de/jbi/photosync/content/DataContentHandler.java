@@ -10,7 +10,6 @@ import de.jbi.photosync.utils.Folder;
  */
 public class DataContentHandler {
     private static DataContentHandler ourInstance = new DataContentHandler();
-
     private List<Folder> selectedFolders;
 
     public static DataContentHandler getInstance() {
@@ -51,6 +50,14 @@ public class DataContentHandler {
         }
 
         selectedFolders.remove(folder);
+    }
+
+    public int getTotalAmountOfFiles() {
+        int total = 0;
+        for (Folder folder:selectedFolders) {
+            total += folder.getChildAmount();
+        }
+        return total;
     }
 
 }

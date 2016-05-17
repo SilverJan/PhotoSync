@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import de.jbi.photosync.R;
 import de.jbi.photosync.adapters.FolderArrayAdapter;
 import de.jbi.photosync.content.DataContentHandler;
+import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.utils.FileChooser;
 import de.jbi.photosync.utils.Folder;
 
@@ -106,6 +107,12 @@ public class FolderSelectionFragment extends Fragment {
                 Folder folderToAdd = new Folder(parentFile, true);
                 try {
                     dataContentHandler.addSelectedFolder(folderToAdd);
+                    SharedPreferencesUtil.addFolder(ctx, folderToAdd);
+
+                    // Workaround for adapter, Observer would be cooler
+                    folderArrayAdapter.clear();
+                    folderArrayAdapter.addAll(SharedPreferencesUtil.getFolders(ctx));
+
                 } catch (IllegalArgumentException ex) {
                     Toast.makeText(ctx, ex.getMessage(), Toast.LENGTH_LONG).show();
                 }
@@ -115,12 +122,23 @@ public class FolderSelectionFragment extends Fragment {
     }
 
     /**
-     * Remove functions from template row
+     * Remove functions from template row and add remove all folders to btn
      */
     private void handleTemplateRow() {
         LinearLayout ll = (LinearLayout) rootView.findViewById(R.id.infoTemplate);
         Button templateRemoveBtn = (Button) ll.findViewById(R.id.folderRemoveButton);
-        templateRemoveBtn.setClickable(false);
-        templateRemoveBtn.setText("Click to remove");
+        templateRemoveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferencesUtil.cleanFolderStorage(ctx);
+
+                // Workaround for adapter
+                folderArrayAdapter.clear();
+                dataContentHandler.setSelectedFolders(SharedPreferencesUtil.getFolders(ctx));
+
+                folderArrayAdapter.notifyDataSetChanged();
+            }
+        });
+        templateRemoveBtn.setText("REMOVE ALL");
     }
 }
