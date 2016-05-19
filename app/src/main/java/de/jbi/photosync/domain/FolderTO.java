@@ -1,33 +1,50 @@
 package de.jbi.photosync.domain;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 /**
  * Created by Jan on 18.05.2016.
  */
 public class FolderTO {
+    @SerializedName("id")
+    @Expose
     private String id;
 
-    private String absolutePath;
+    @SerializedName("name")
+    @Expose
+    public String name;
 
-    private String name;
+    @SerializedName("absolutePath")
+    @Expose
+    public String absolutePath;
 
-    private int childAmount;
+    @SerializedName("childAmount")
+    @Expose
+    public int childAmount;
 
-    private long size;
+    @SerializedName("size")
+    @Expose
+    public long size;
 
-    private Boolean selected;
+    @SerializedName("selected")
+    @Expose
+    public boolean selected;
 
-    private List<Picture> pictures;
+    @SerializedName("pictures")
+    @Expose
+    private List<PictureTO> pictureTOs;
 
-    public FolderTO(Boolean selected, String id, String absolutePath, String name, int childAmount, long size, List<Picture> pictures) {
+    public FolderTO(Boolean selected, String id, String absolutePath, String name, int childAmount, long size, List<PictureTO> pictureTOs) {
         this.selected = selected;
         this.id = id;
         this.absolutePath = absolutePath;
         this.name = name;
         this.childAmount = childAmount;
         this.size = size;
-        this.pictures = pictures;
+        this.pictureTOs = pictureTOs;
     }
 
     public String getId() {
@@ -78,12 +95,12 @@ public class FolderTO {
         this.selected = selected;
     }
 
-    public List<Picture> getPictures() {
-        return pictures;
+    public List<PictureTO> getPictureTOs() {
+        return pictureTOs;
     }
 
-    public void setPictures(List<Picture> pictures) {
-        this.pictures = pictures;
+    public void setPictureTOs(List<PictureTO> pictureTOs) {
+        this.pictureTOs = pictureTOs;
     }
 
     @Override

@@ -14,19 +14,21 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
+import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.domain.MockPicture;
+import de.jbi.photosync.domain.Picture;
 import de.jbi.photosync.http.PhotoSyncBoundary;
-import de.jbi.photosync.utils.Logger;
 
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
 
-public class DashboardFragment extends Fragment implements Observer{
+public class DashboardFragment extends Fragment implements Observer {
     private Activity activity;
     private Context ctx;
     private View rootView;
@@ -76,13 +78,22 @@ public class DashboardFragment extends Fragment implements Observer{
         SharedPreferencesUtil.addMetaData(ctx);
 
 //        PhotoSyncBoundary.getInstance().addFolder(MockFolder.mockFolderA);
+        PhotoSyncBoundary.getInstance().uploadPicture(MockPicture.mockPictureA);
 
-        try {
-            PhotoSyncBoundary.getInstance().getAllFolders();
-        } catch (IOException e) {
-            String logMessage = "Unhandled exception: " + e.getMessage();
-            Logger.getInstance().appendLog(logMessage);
+        List<Folder> somefolders = DataContentHandler.getInstance().getFolders();
+        for (Folder folder : somefolders) {
+            for (Picture pic : folder.getPictures()) {
+                PhotoSyncBoundary.getInstance().uploadPicture(pic);
+            }
         }
+
+
+//        try {
+//            PhotoSyncBoundary.getInstance().getAllFolders();
+//        } catch (IOException e) {
+//            String logMessage = "Unhandled exception: " + e.getMessage();
+//            Logger.getInstance().appendLog(logMessage);
+//        }
     }
 
     @Override

@@ -36,10 +36,7 @@ public class Logger extends Observable{
         log += message;
         setChanged();
         notifyObservers(log);
-        showLogToast(message);
-
-        // TODO remove me
-        Log.i("PHOTOSYNC", message);
+        showLogToast(message);;
     }
 
     private void showLogToast(String msg) {

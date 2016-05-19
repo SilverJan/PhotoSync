@@ -1,6 +1,7 @@
 package de.jbi.photosync.http;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,9 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManagerFactory;
 
 import de.jbi.photosync.R;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Response;
 
 /**
  * Created by Jan on 17.05.2016.

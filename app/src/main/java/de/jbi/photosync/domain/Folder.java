@@ -1,6 +1,7 @@
 package de.jbi.photosync.domain;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -142,15 +143,6 @@ public class Folder {
                 '}';
     }
 
-    /**
-     * Converts a FolderTO instance to a Folder instance
-     * Needed for GSON and Retrofit
-     * @param folderTO
-     * @return
-     */
-    public static Folder convertFolderTOtoFolder(FolderTO folderTO) {
-        return new Folder(new File(folderTO.getAbsolutePath()), folderTO.getName(), folderTO.getChildAmount(), folderTO.getSize(), folderTO.getSelected(), folderTO.getPictures());
-    }
 
     /**
      * Sums up the sizes of all passed pictures
