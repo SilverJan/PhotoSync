@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.List;
+import java.util.Observer;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
@@ -19,7 +20,10 @@ import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.fragments.DashboardFragment;
 import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
-import de.jbi.photosync.utils.Folder;
+import de.jbi.photosync.http.HttpClientFactory;
+import de.jbi.photosync.http.PhotoSyncBoundary;
+import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.utils.Logger;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -35,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         List<Folder> initialFolders = SharedPreferencesUtil.getFolders(this);
-        DataContentHandler.getInstance().setSelectedFolders(initialFolders);
+        DataContentHandler.getInstance().setFolders(initialFolders);
 
         fragmentTitles = getResources().getStringArray(R.array.fragments_array);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
+
+        registerObserver();
+        handleHttps();
 
         if (savedInstanceState == null) {
             selectItem(0);
@@ -102,6 +109,21 @@ public class MainActivity extends AppCompatActivity {
     public void setTitle(CharSequence title) {
         this.title = title;
         getSupportActionBar().setTitle(this.title);
+    }
+
+    private void registerObserver() {
+        Observer logObserver = new DashboardFragment();
+        Logger logger = Logger.getInstance();
+        Logger.setCtx(this);
+        logger.addObserver(logObserver);
+    }
+
+    private void handleHttps() {
+        try {
+            PhotoSyncBoundary.getInstance().setClient(HttpClientFactory.handleCert(this));
+        } catch (Exception e) {
+            Logger.getInstance().appendLog(e.getMessage());
+        }
     }
 }
 

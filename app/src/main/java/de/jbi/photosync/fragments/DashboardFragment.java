@@ -14,13 +14,19 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
+
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
+import de.jbi.photosync.http.PhotoSyncBoundary;
+import de.jbi.photosync.utils.Logger;
 
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
 
-public class DashboardFragment extends Fragment {
+public class DashboardFragment extends Fragment implements Observer{
     private Activity activity;
     private Context ctx;
     private View rootView;
@@ -37,16 +43,17 @@ public class DashboardFragment extends Fragment {
         activity = getActivity();
         ctx = activity.getApplicationContext();
 
-        setInfos();
+        setUIAndContents();
 
         return rootView;
     }
 
-    private void setInfos() {
+
+    private void setUIAndContents() {
         DataContentHandler dataContentHandler = getInstance();
 
         TextView selectedFoldersInfoTV = (TextView) rootView.findViewById(R.id.totalSelectedFoldersInfoTextView);
-        selectedFoldersInfoTV.append(Integer.toString(dataContentHandler.getSelectedFolders().size()));
+        selectedFoldersInfoTV.append(Integer.toString(dataContentHandler.getFolders().size()));
 
         TextView totalFileAmountTV = (TextView) rootView.findViewById(R.id.totalFileAmountTextView);
         TextView lastSyncTV = (TextView) rootView.findViewById(R.id.lastSyncTextView);
@@ -67,5 +74,18 @@ public class DashboardFragment extends Fragment {
 
     private void handleSync() {
         SharedPreferencesUtil.addMetaData(ctx);
+
+//        PhotoSyncBoundary.getInstance().addFolder(MockFolder.mockFolderA);
+
+        try {
+            PhotoSyncBoundary.getInstance().getAllFolders();
+        } catch (IOException e) {
+            String logMessage = "Unhandled exception: " + e.getMessage();
+            Logger.getInstance().appendLog(logMessage);
+        }
+    }
+
+    @Override
+    public void update(Observable observable, Object data) {
     }
 }

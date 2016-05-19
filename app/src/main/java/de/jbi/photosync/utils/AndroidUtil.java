@@ -35,7 +35,7 @@ public class AndroidUtil {
                     inFiles.addAll(getAllPhotos(file, true));
                 }
             } else {
-                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) {
+                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg") || file.getName().endsWith(".png")) {
                     inFiles.add(file);
                 }
             }

@@ -21,7 +21,7 @@ import de.jbi.photosync.adapters.FolderArrayAdapter;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.utils.FileChooser;
-import de.jbi.photosync.utils.Folder;
+import de.jbi.photosync.domain.Folder;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -36,8 +36,6 @@ public class FolderSelectionFragment extends Fragment {
     public FolderSelectionFragment() {
         // Empty constructor required for fragment subclasses
     }
-
-    // TODO add folder selection handling
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,7 +57,7 @@ public class FolderSelectionFragment extends Fragment {
      * Set adapter and get initial folder selection
      */
     private void setFolderContainerInit() {
-        ArrayList<Folder> allSelectedFolders = (ArrayList) dataContentHandler.getSelectedFolders();
+        ArrayList<Folder> allSelectedFolders = (ArrayList) dataContentHandler.getFolders();
 
         folderArrayAdapter = new FolderArrayAdapter(ctx, R.layout.list_folder_item, allSelectedFolders);
         ListView folderListView = (ListView) rootView.findViewById(R.id.folderContainerListView);
@@ -83,7 +81,7 @@ public class FolderSelectionFragment extends Fragment {
      * @param position
      */
     private void handleLongClick(int position) {
-        Toast.makeText(ctx, dataContentHandler.getSelectedFolders().get(position).getAbsolutePath().getPath(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(ctx, dataContentHandler.getFolders().get(position).getAbsolutePath().getPath(), Toast.LENGTH_SHORT).show();
     }
 
     private void setAddFolderBtnClickListener() {
@@ -106,17 +104,15 @@ public class FolderSelectionFragment extends Fragment {
                 File parentFile = file.getParentFile();
                 Folder folderToAdd = new Folder(parentFile, true);
                 try {
-                    dataContentHandler.addSelectedFolder(folderToAdd);
+                    dataContentHandler.addFolder(folderToAdd);
                     SharedPreferencesUtil.addFolder(ctx, folderToAdd);
 
                     // Workaround for adapter, Observer would be cooler
-                    folderArrayAdapter.clear();
-                    folderArrayAdapter.addAll(SharedPreferencesUtil.getFolders(ctx));
+                    folderArrayAdapter.refreshAdapterAndLoadData();
 
                 } catch (IllegalArgumentException ex) {
                     Toast.makeText(ctx, ex.getMessage(), Toast.LENGTH_LONG).show();
                 }
-                folderArrayAdapter.notifyDataSetChanged();
             }
         }).showDialog();
     }
@@ -133,10 +129,7 @@ public class FolderSelectionFragment extends Fragment {
                 SharedPreferencesUtil.cleanFolderStorage(ctx);
 
                 // Workaround for adapter
-                folderArrayAdapter.clear();
-                dataContentHandler.setSelectedFolders(SharedPreferencesUtil.getFolders(ctx));
-
-                folderArrayAdapter.notifyDataSetChanged();
+                folderArrayAdapter.refreshAdapterAndLoadData();
             }
         });
         templateRemoveBtn.setText("REMOVE ALL");

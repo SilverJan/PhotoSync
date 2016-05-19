@@ -9,14 +9,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
-import de.jbi.photosync.utils.Folder;
+import de.jbi.photosync.domain.Folder;
 
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
 
@@ -60,8 +58,11 @@ public class FolderArrayAdapter extends ArrayAdapter {
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                String folderPath = getInstance().getSelectedFolders().get(position).getAbsolutePath().getPath();
-                Toast.makeText(getContext(), folderPath , Toast.LENGTH_SHORT).show();
+                Folder folder = getInstance().getFolders().get(position);
+                String details = "Path: " + folder.getAbsolutePath().getPath() + "\n"
+                        + "Size (File Bytes): " + folder.getSize() + "\n"
+                        + "Size (Human readable): " + humanReadableByteCount(folder.getSize(), true);
+                Toast.makeText(getContext(), details, Toast.LENGTH_LONG).show();
 
                 return true;
             }
@@ -77,12 +78,30 @@ public class FolderArrayAdapter extends ArrayAdapter {
         return view;
     }
 
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
     private void handleRemoveFolder(int position) {
         DataContentHandler dataContentHandler = getInstance();
-        Folder folderToBeRemoved = dataContentHandler.getSelectedFolders().get(position);
+        Folder folderToBeRemoved = dataContentHandler.getFolders().get(position);
 
-        dataContentHandler.removeSelectedFolder(folderToBeRemoved);
+        dataContentHandler.removeFolder(folderToBeRemoved);
         SharedPreferencesUtil.removeFolder(getContext(), folderToBeRemoved);
+
+        this.refreshAdapterAndLoadData();
+    }
+
+    /**
+     * Clears the binded data, reloads it and refreshes the UI
+     */
+    public void refreshAdapterAndLoadData() {
+        this.clear();
+        this.addAll(SharedPreferencesUtil.getFolders(getContext()));
 
         this.notifyDataSetChanged();
     }
