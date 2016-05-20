@@ -3,6 +3,7 @@ package de.jbi.photosync.activities;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,9 +21,11 @@ import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.fragments.DashboardFragment;
 import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
+import de.jbi.photosync.fragments.SettingsFragment;
 import de.jbi.photosync.http.HttpClientFactory;
 import de.jbi.photosync.http.PhotoSyncBoundary;
 import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.utils.AndroidUtil;
 import de.jbi.photosync.utils.Logger;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,11 +41,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        List<Folder> initialFolders = SharedPreferencesUtil.getFolders(this);
+        // ##########################
+        // ### SET INITIAL VALUES ###
+        // ##########################
+
+        // Set main Context
+        AndroidUtil.ContextHandler.setMainContext(this);
 
         // Set default preferences from preferences.xml
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+        List<Folder> initialFolders = SharedPreferencesUtil.getFolders();
         DataContentHandler.getInstance().setFolders(initialFolders);
+
+        registerObserver();
+
+        // ####################
+        // ### SET UI STUFF ###
+        // ####################
 
         fragmentTitles = getResources().getStringArray(R.array.fragments_array);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -53,9 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
-
-        registerObserver();
-        handleHttps();
 
         if (savedInstanceState == null) {
             selectItem(0);
@@ -122,14 +135,6 @@ public class MainActivity extends AppCompatActivity {
         Logger logger = Logger.getInstance();
         Logger.setCtx(this);
         logger.addObserver(logObserver);
-    }
-
-    private void handleHttps() {
-        try {
-            PhotoSyncBoundary.getInstance().setClient(HttpClientFactory.handleCert(this));
-        } catch (Exception e) {
-            Logger.getInstance().appendLog(e.getMessage());
-        }
     }
 }
 

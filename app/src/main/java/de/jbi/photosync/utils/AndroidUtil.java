@@ -1,5 +1,6 @@
 package de.jbi.photosync.utils;
 
+import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.List;
  * Created by Jan on 13.05.2016.
  */
 public class AndroidUtil {
+
     public static boolean isExternalStorageReadable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) ||
@@ -62,5 +64,29 @@ public class AndroidUtil {
             }
         }
         return amount;
+    }
+
+    public static boolean isPortInvalid(String port) {
+        return port.length() > 4 || port == null || port.equals("");
+    }
+
+    public static boolean isIpInvalid(String url) {
+        // TODO add regexp
+        return url == null || url.equals("");
+    }
+
+    public static class ContextHandler {
+        private static Context mainCtx;
+
+        public static void setMainContext(Context ctx) {
+            mainCtx = ctx;
+        }
+        public static Context getMainContext() {
+            if (mainCtx == null) {
+                throw new ExceptionInInitializerError("Context is not set! First call setMainContext() in MainActivity!");
+            } else {
+                return mainCtx;
+            }
+        }
     }
 }

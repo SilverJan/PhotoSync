@@ -61,13 +61,13 @@ public class DeviceInfoFragment extends Fragment {
         fileDirTV.append("\nRoot dir: " + Environment.getRootDirectory());
         fileDirTV.append("\nExt dir: " + Environment.getExternalStorageDirectory());
 
-        File firstPic = getAllPhotos(Environment.getExternalStorageDirectory(), false).get(0);
+        File firstPic = getAllPhotos(Environment.getExternalStorageDirectory(), true).get(0);
 
         fileDirTV.append(firstPic.toString());
     }
 
     private void setPhotoView() {
-        ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory(), false);
+        ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory(), true);
         ArrayList<File> severalPhotos = new ArrayList<>();
         for (int i = 0; i != 2; i++) {
             severalPhotos.add(allPhotos.get(i));

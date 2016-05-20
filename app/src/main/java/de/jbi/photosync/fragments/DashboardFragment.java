@@ -62,7 +62,7 @@ public class DashboardFragment extends Fragment implements Observer {
         Button syncBtn = (Button) rootView.findViewById(R.id.syncButton);
 
         totalFileAmountTV.append(Integer.toString(dataContentHandler.getTotalAmountOfFiles()));
-        lastSyncTV.append(SharedPreferencesUtil.getMetaData(ctx));
+        lastSyncTV.append(SharedPreferencesUtil.getMetaData());
 
         syncBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,7 +75,7 @@ public class DashboardFragment extends Fragment implements Observer {
     }
 
     private void handleSync() {
-        SharedPreferencesUtil.addMetaData(ctx);
+        SharedPreferencesUtil.addMetaData();
 
 //        PhotoSyncBoundary.getInstance().addFolder(MockFolder.mockFolderA);
         PhotoSyncBoundary.getInstance().uploadPicture(MockPicture.mockPictureA);

@@ -91,7 +91,7 @@ public class FolderArrayAdapter extends ArrayAdapter {
         Folder folderToBeRemoved = dataContentHandler.getFolders().get(position);
 
         dataContentHandler.removeFolder(folderToBeRemoved);
-        SharedPreferencesUtil.removeFolder(getContext(), folderToBeRemoved);
+        SharedPreferencesUtil.removeFolder(folderToBeRemoved);
 
         this.refreshAdapterAndLoadData();
     }
@@ -101,7 +101,7 @@ public class FolderArrayAdapter extends ArrayAdapter {
      */
     public void refreshAdapterAndLoadData() {
         this.clear();
-        this.addAll(SharedPreferencesUtil.getFolders(getContext()));
+        this.addAll(SharedPreferencesUtil.getFolders());
 
         this.notifyDataSetChanged();
     }

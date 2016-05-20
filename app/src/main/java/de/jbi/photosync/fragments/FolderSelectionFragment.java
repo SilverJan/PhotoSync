@@ -105,7 +105,7 @@ public class FolderSelectionFragment extends Fragment {
                 Folder folderToAdd = new Folder(parentFile, true);
                 try {
                     dataContentHandler.addFolder(folderToAdd);
-                    SharedPreferencesUtil.addFolder(ctx, folderToAdd);
+                    SharedPreferencesUtil.addFolder(folderToAdd);
 
                     // Workaround for adapter, Observer would be cooler
                     folderArrayAdapter.refreshAdapterAndLoadData();
@@ -126,7 +126,7 @@ public class FolderSelectionFragment extends Fragment {
         templateRemoveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferencesUtil.cleanFolderStorage(ctx);
+                SharedPreferencesUtil.cleanFolderStorage();
 
                 // Workaround for adapter
                 folderArrayAdapter.refreshAdapterAndLoadData();

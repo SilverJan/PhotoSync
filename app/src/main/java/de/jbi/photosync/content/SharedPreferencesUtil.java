@@ -2,6 +2,7 @@ package de.jbi.photosync.content;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.utils.AndroidUtil;
 
 /**
  * Created by Jan on 16.05.2016.
@@ -21,10 +23,10 @@ public class SharedPreferencesUtil {
 
     /**
      * Recieves the FolderID <-> AbsolutePath maps and creates a List of new Folders (with the old ID)
-     * @param ctx
      * @return
      */
-    public static List<Folder> getFolders(Context ctx) {
+    public static List<Folder> getFolders() {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_data), Context.MODE_PRIVATE);
 
         List<Folder> folderList = new ArrayList<>();
@@ -42,7 +44,8 @@ public class SharedPreferencesUtil {
     }
 
     // TODO add check on existence!
-    public static void addFolder(Context ctx, Folder folder) {
+    public static void addFolder(Folder folder) {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_data), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
@@ -50,11 +53,12 @@ public class SharedPreferencesUtil {
         editor.commit();
     }
 
-    public static void removeFolder(Context ctx, Folder folder) {
-        if (!getFolders(ctx).contains(folder)) {
+    public static void removeFolder(Folder folder) {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
+        if (!getFolders().contains(folder)) {
             String msg = "Folder was not found in local storage: \n"
                     + "{folder}: " + folder + "\n"
-                    + "{localStorage folders}: " + getFolders(ctx);
+                    + "{localStorage folders}: " + getFolders();
             throw new IllegalArgumentException(msg);
             // TODO dafuq
         }
@@ -65,27 +69,37 @@ public class SharedPreferencesUtil {
         editor.remove(folder.getId().toString());
         editor.commit();
 
-        List<Folder> bla = getFolders(ctx);
+        List<Folder> bla = getFolders();
     }
 
-    public static void cleanFolderStorage(Context ctx) {
+    public static void cleanFolderStorage() {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_data), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.clear();
         editor.commit();
     }
 
-    public static void addMetaData(Context ctx) {
+    public static void addMetaData() {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_meta), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
         editor.putString(META_LAST_SYNC, new Date(System.currentTimeMillis()).toString());
     }
 
-    public static String getMetaData(Context ctx) {
+    public static String getMetaData() {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_meta), Context.MODE_PRIVATE);
         return sharedPref.getString(META_LAST_SYNC, new Date(System.currentTimeMillis()).toString());
     }
+
+    public static String getAnyValue(String prefKey) {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return sharedPref.getString(prefKey, "");
+    }
+
     /**
      * Sets all the settings to default values, be careful with that!
      */

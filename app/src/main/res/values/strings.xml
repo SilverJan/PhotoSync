@@ -7,10 +7,16 @@
         <item>Home</item>
         <item>Device Infos</item>
         <item>Folder selection</item>
+        <item>Settings</item>
     </string-array>
 
     <!-- Folder selection fragment -->
     <string name="fragment_folder_selection_long_press_info">Long-press a row for more information\n</string>
     <string name="fragment_folder_selection_add_folder">Add folder</string>
     <string name="fragment_folder_selection_remove_all_folders">Remove all folders</string>
+
+
+    <!-- Default values -->
+    <string name="default_port">8443</string>
+    <string name="default_ip">192.168.178.46</string>
 </resources>
