@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         List<Folder> initialFolders = SharedPreferencesUtil.getFolders(this);
+
+        // Set default preferences from preferences.xml
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         DataContentHandler.getInstance().setFolders(initialFolders);
 
         fragmentTitles = getResources().getStringArray(R.array.fragments_array);
@@ -80,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 2:
                 fragment = new FolderSelectionFragment();
+                break;
+            case 3:
+                fragment = new SettingsFragment();
                 break;
             default:
                 fragment = new DashboardFragment();

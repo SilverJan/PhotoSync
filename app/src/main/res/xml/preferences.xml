@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pseudo toolbar workaround -->
+    <EditTextPreference>
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+    </EditTextPreference>
+    <EditTextPreference
+        android:defaultValue="@string/default_ip"
+        android:key="pref_server_ip"
+        android:summary="Enter the server IP address"
+        android:title="Server IP"></EditTextPreference>
+    <EditTextPreference
+        android:defaultValue="@string/default_port"
+        android:key="pref_server_port"
+        android:summary="Enter the server IP port"
+        android:title="Server Port"></EditTextPreference>
+</PreferenceScreen>

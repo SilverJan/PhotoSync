@@ -86,4 +86,11 @@ public class SharedPreferencesUtil {
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.shared_preference_meta), Context.MODE_PRIVATE);
         return sharedPref.getString(META_LAST_SYNC, new Date(System.currentTimeMillis()).toString());
     }
+    /**
+     * Sets all the settings to default values, be careful with that!
+     */
+    public static void setSettingsToDefaultValues() {
+        Context ctx = AndroidUtil.ContextHandler.getMainContext();
+        PreferenceManager.setDefaultValues(ctx, R.xml.preferences, true);
+    }
 }
