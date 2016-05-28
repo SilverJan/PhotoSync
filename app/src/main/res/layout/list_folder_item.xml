@@ -25,5 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="3dip"
-        android:text="Remove" />
+        android:text="Remove"
+        android:drawableLeft="@drawable/ic_remove_black_24dp"/>
 </LinearLayout>

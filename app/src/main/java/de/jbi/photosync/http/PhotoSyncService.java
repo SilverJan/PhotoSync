@@ -2,15 +2,14 @@ package de.jbi.photosync.http;
 
 import java.util.List;
 
-import de.jbi.photosync.domain.Folder;
 import de.jbi.photosync.domain.FolderTO;
-import de.jbi.photosync.domain.Picture;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -31,10 +30,11 @@ public interface PhotoSyncService {
             "Content-Type:application/json"
     })
     @POST("folders")
-    Call<Folder> createFolder(@Body FolderTO folder);
+    Call<ResponseBody> createFolder(@Body FolderTO folder);
 
     @Multipart
     @POST("folders/{folder}")
-    Call<ResponseBody> uploadPicture(@Part("folderToPutIn")RequestBody folderToPutIn,
+    Call<ResponseBody> uploadPicture(@Header("foldertoputinheader") String folderToPutInHeader,
+                                     @Part("folderToPutIn") RequestBody folderToPutIn,
                                      @Part MultipartBody.Part picture);
 }

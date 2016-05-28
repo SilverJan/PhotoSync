@@ -18,35 +18,35 @@
             android:id="@+id/totalSelectedFoldersInfoTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total selected folders: "
+            android:text="@string/fragment_dashboard_total_selected_folders_info"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/totalFileAmountTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total amount of files: "
+            android:text="@string/fragment_dashboard_total_amount_of_files"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/newSelectedFoldersInfoTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New folders since last sync: "
+            android:text="@string/fragment_dashboard_new_folders_since_last_sync"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/newFileAmountTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New files since last sync: "
+            android:text="@string/fragment_dashboard_new_files_since_last_sync"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/lastSyncTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Last sync: "
+            android:text="@string/fragment_dashboard_last_sync"
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
 
@@ -58,6 +58,6 @@
         android:layout_centerHorizontal="true"
         android:layout_gravity="center"
         android:layout_marginBottom="180dp"
-        android:text="Sync" />
+        android:text="@string/fragment_dashboard_sync" />
 
 </LinearLayout>

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -20,8 +21,8 @@ import de.jbi.photosync.R;
 import de.jbi.photosync.adapters.FolderArrayAdapter;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
-import de.jbi.photosync.utils.FileChooser;
 import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.utils.FileChooser;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -133,5 +134,6 @@ public class FolderSelectionFragment extends Fragment {
             }
         });
         templateRemoveBtn.setText("REMOVE ALL");
+        templateRemoveBtn.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_delete_sweep_black_24dp, null), null, null);
     }
 }

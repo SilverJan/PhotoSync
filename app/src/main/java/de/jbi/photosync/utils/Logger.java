@@ -31,12 +31,13 @@ public class Logger extends Observable{
         return log;
     }
 
-    public void appendLog(String message) {
+    public void appendLog(String message, Boolean showToast) {
         log += "\n";
         log += message;
         setChanged();
         notifyObservers(log);
-        showLogToast(message);;
+        if (showToast)
+            showLogToast(message);
     }
 
     private void showLogToast(String msg) {

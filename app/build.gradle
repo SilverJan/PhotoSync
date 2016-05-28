@@ -27,4 +27,6 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.0.2'
     compile 'com.squareup.retrofit2:converter-gson:2.0.2'
     compile 'com.android.support:support-v4:23.4.0'
+    compile 'org.jdeferred:jdeferred-android-aar:1.2.4'
+
 }

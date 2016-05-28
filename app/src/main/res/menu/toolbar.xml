@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:de.jbi.photosync="http://schemas.android.com/apk/res-auto">
+    <!--<item-->
+        <!--android:id="@+id/action_app_drawer"-->
+        <!--android:icon="@drawable/ic_dehaze_black_24dp"-->
+        <!--android:title="Open App Drawer"-->
+        <!--de.jbi.photosync:showAsAction="ifRoom"/>-->
+
+</menu>

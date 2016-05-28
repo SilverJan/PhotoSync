@@ -1,17 +1,14 @@
 package de.jbi.photosync.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.activities.MainActivity;
-import de.jbi.photosync.http.PhotoSyncBoundary;
 
-public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     Activity activity;
 

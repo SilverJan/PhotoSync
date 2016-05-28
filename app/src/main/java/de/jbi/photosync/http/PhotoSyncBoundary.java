@@ -1,8 +1,18 @@
 package de.jbi.photosync.http;
 
+import android.util.Log;
+
+import com.google.gson.JsonSyntaxException;
+
+import org.jdeferred.Deferred;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
+
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.ServerDataContentHandler;
@@ -33,6 +43,7 @@ import static de.jbi.photosync.domain.TOUtil.convertPictureToPictureTO;
 /**
  * Created by Jan on 17.05.2016.
  */
+@SuppressWarnings("unchecked")
 public class PhotoSyncBoundary {
     private static PhotoSyncBoundary ourInstance = new PhotoSyncBoundary();
     private Retrofit retrofit;
@@ -42,6 +53,8 @@ public class PhotoSyncBoundary {
 
     private String default_ip;
     private String default_port;
+
+    private int tries = 0;
 
     public static PhotoSyncBoundary getInstance() {
         return ourInstance;
@@ -60,11 +73,11 @@ public class PhotoSyncBoundary {
         String port = SharedPreferencesUtil.getAnyValue(SettingsFragment.KEY_PREF_SERVER_PORT);
 
         if (AndroidUtil.isPortInvalid(port)) {
-            Logger.getInstance().appendLog("Invalid port: " + port + "\nUse default port now");
+            Logger.getInstance().appendLog("Invalid port: " + port + "\nUse default port now", true);
             port = default_port;
         }
         if (AndroidUtil.isIpInvalid(ip)) {
-            Logger.getInstance().appendLog("Invalid ip: " + ip + "\nUse default ip now");
+            Logger.getInstance().appendLog("Invalid ip: " + ip + "\nUse default ip now", true);
             ip = default_ip;
         }
 
@@ -81,7 +94,7 @@ public class PhotoSyncBoundary {
         try {
             client = HttpClientFactory.handleCert(AndroidUtil.ContextHandler.getMainContext());
         } catch (Exception e) {
-            Logger.getInstance().appendLog(e.getMessage());
+            Logger.getInstance().appendLog(e.getMessage(), true);
 
         }
         retrofit = new Retrofit.Builder()
@@ -93,34 +106,28 @@ public class PhotoSyncBoundary {
         photoSyncService = retrofit.create(PhotoSyncService.class);
     }
 
-//    /**
-//     * Call this before doing any REST call, otherwise -> CertPathValidatorException
-//     * Recently this is called in MainActivity (because of Context needed)
-//     *
-//     * @param client
-//     */
-//    public void setClient(OkHttpClient client) {
-//        setBaseUrl();
-//
-//        retrofit = new Retrofit.Builder()
-//                .baseUrl(baseUrl)
-//                .client(client)
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build();
-//
-//
-//        photoSyncService = retrofit.create(PhotoSyncService.class);
-//    }
-
-    public void getAllFolders() throws IOException {
+    /**
+     * Return a configured instance of PhotoSyncService
+     * @return
+     */
+    public PhotoSyncService getPhotoSyncService() {
         setBaseUrl();
         rebuildRetrofit();
+
+        return photoSyncService;
+    }
+
+    public Promise getAllFoldersAsync() throws IOException {
+        setBaseUrl();
+        rebuildRetrofit();
+
+        final Deferred deferred = new DeferredObject();
+        Promise promise = deferred.promise();
 
         photoSyncService.getAllFolders().enqueue(new Callback<List<FolderTO>>() {
             @Override
             public void onResponse(Call<List<FolderTO>> call, Response<List<FolderTO>> response) {
                 if (response.isSuccessful()) {
-
                     // Converting FolderTO List to Folder List and add to ServerDataContentHandler
                     List<FolderTO> folderTOList = response.body();
                     List<Folder> folderList = new ArrayList<>();
@@ -130,46 +137,65 @@ public class PhotoSyncBoundary {
                     }
 
                     ServerDataContentHandler.getInstance().setFolders(folderList);
+                    deferred.resolve("done");
+
                 } else {
                     String message = "Response unsuccessful (" + response.code() + "): " + response.message();
-                    Logger.getInstance().appendLog(message);
+                    Logger.getInstance().appendLog(message, true);
+
+                    deferred.reject("fail");
                 }
             }
 
             @Override
             public void onFailure(Call<List<FolderTO>> call, Throwable t) {
-                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage());
+                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage(), true);
+                deferred.reject(t);
             }
         });
+
+        return promise;
     }
 
-    public void addFolder(Folder folder) {
+    public void addFolderAsync(Folder folder) {
         setBaseUrl();
         rebuildRetrofit();
 
         FolderTO folderTO = convertFolderToFolderTO(folder);
 
-        photoSyncService.createFolder(folderTO).enqueue(new Callback<Folder>() {
+        photoSyncService.createFolder(folderTO).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<Folder> call, Response<Folder> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Logger.getInstance().appendLog("Post successful");
+                    Logger.getInstance().appendLog("Post successful", false);
                 } else {
                     String message = "Response unsuccessful (" + response.code() + "): " + response.message();
-                    Logger.getInstance().appendLog(message);
+                    Logger.getInstance().appendLog(message, true);
                 }
             }
 
             @Override
-            public void onFailure(Call<Folder> call, Throwable t) {
-                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage());
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                if (t instanceof JsonSyntaxException) {
+                    Logger.getInstance().appendLog("Post successful", false);
+                    return;
+                }
+                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage(), true);
             }
         });
     }
 
-    public void uploadPicture(Picture pic) {
+    /**
+     * Upload one picture to the server async
+     * @param pic
+     * @return
+     */
+    public Promise uploadPictureAsync(Picture pic) {
         setBaseUrl();
         rebuildRetrofit();
+
+        final Deferred deferred = new DeferredObject();
+        Promise promise = deferred.promise();
 
         PictureTO picTO = convertPictureToPictureTO(pic);
 
@@ -178,22 +204,85 @@ public class PhotoSyncBoundary {
         String folderToPutInString = pic.getAbsolutePath().getParentFile().getName();
         RequestBody folderToPutIn = RequestBody.create(MediaType.parse("multipart/form-data"), folderToPutInString);
 
-        photoSyncService.uploadPicture(folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
+        photoSyncService.uploadPicture(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Logger.getInstance().appendLog("Post successful");
+                    Logger.getInstance().appendLog("Post successful", false);
+                    deferred.resolve("");
                 } else {
                     String message = "Response unsuccessful (" + response.code() + "): " + response.message();
-                    Logger.getInstance().appendLog(message);
+                    Logger.getInstance().appendLog(message, false);
+                    deferred.reject(message);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage());
-            }
+                Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage(), false);
 
+                if (t instanceof SocketTimeoutException || tries < 3) {
+                    call.clone().enqueue(this);
+                    tries++;
+                } else {
+                    deferred.reject(t);
+                }
+            }
         });
+        return promise;
+    }
+
+
+//    public Promise uploadPictureListAsync(List<Picture> pictureList) throws ExecutionException, InterruptedException {
+//        progressReceived = 0;
+//        progressSent = 0;
+//
+//        final Deferred deferred = new DeferredObject();
+//        Promise promise = deferred.promise();
+//
+//        final int sum = pictureList.size();
+//
+//        if (sum > 50) {
+//
+//        } else {
+//            for (Picture pic : pictureList) {
+//                // Do this with AsyncTasks because of Thread_Pool_Executor -> Better handling of many async calls
+//                PhotoUploadAsyncTask asyncTask = new PhotoUploadAsyncTask();
+//                asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, pic)
+//                        .get()
+//                        .done(new DoneListCallback(deferred, progressReceived, sum))
+//                        .fail(new FailCallback() {
+//                                  @Override
+//                                  public void onFail(Object result) {
+//                                      deferred.reject(result);
+//                                  }
+//                              }
+//                        );
+//            }
+//        }
+//        return promise;
+
+    /**
+     * Divides a list of pictures into smaller lists.
+     *
+     * @param sourceList The source list to be divided
+     * @param div        The factor of division
+     * @return
+     */
+    private List<List<Picture>> divideListInPieces(List<Picture> sourceList, int div) {
+        List<List<Picture>> listCollector = new ArrayList<>();
+
+        for (int i = 0; i != sourceList.size(); i += div) {
+            List<Picture> dividedPicList;
+            if (i + div > sourceList.size()) {
+                dividedPicList = sourceList.subList(i, sourceList.size());
+                listCollector.add(dividedPicList);
+                break;
+            } else {
+                dividedPicList = sourceList.subList(i, i + 50);
+                listCollector.add(dividedPicList);
+            }
+        }
+        return listCollector;
     }
 }

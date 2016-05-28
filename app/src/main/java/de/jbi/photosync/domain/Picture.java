@@ -58,6 +58,19 @@ public class Picture {
         return pictureList;
     }
 
+    /**
+     * Returns a new list of Strings that contain the names of the passed picture list
+     * @param pictureList
+     * @return
+     */
+    public static List<String> getPictureNameList(List<Picture> pictureList) {
+        List<String> pictureNames = new ArrayList<>();
+        for(int i = 0; i != pictureList.size(); i++) {
+            pictureNames.add(pictureList.get(i).getName());
+        }
+        return pictureNames;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

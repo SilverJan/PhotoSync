@@ -143,6 +143,15 @@ public class Folder {
                 '}';
     }
 
+    /**
+     * Refreshes the childAmount, picture List and the size of the folder object
+     */
+    public void refreshFolderMetaData() {
+        this.childAmount = getAllPhotos(this.absolutePath, false).size();
+        this.pictures = Picture.getPicturesFromFile(this.absolutePath);
+        this.size = getSizeFromPicturelist(Picture.getPicturesFromFile(this.absolutePath));
+    }
+
 
     /**
      * Sums up the sizes of all passed pictures
@@ -161,6 +170,19 @@ public class Folder {
         return getSizeFromPicturelist(folder.getPictures());
     }
 
+    /**
+     * Returns a new list of Strings that contain the names of the passed folder list
+     * @param folderList
+     * @return
+     */
+    public static List<String> getFolderNameList(List<Folder> folderList) {
+        List<String> folderNames = new ArrayList<>();
+        for(int i = 0; i != folderList.size(); i++) {
+            folderNames.add(folderList.get(i).getName());
+        }
+        return folderNames;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -168,14 +190,14 @@ public class Folder {
 
         Folder folder = (Folder) o;
 
-        if (childAmount != folder.childAmount) return false;
-        if (size != folder.size) return false;
+//        if (childAmount != folder.childAmount) return false;
+//        if (size != folder.size) return false;
         if (id != null ? !id.equals(folder.id) : folder.id != null) return false;
         if (!absolutePath.equals(folder.absolutePath)) return false;
         if (name != null ? !name.equals(folder.name) : folder.name != null) return false;
         if (selected != null ? !selected.equals(folder.selected) : folder.selected != null)
             return false;
-        return pictures != null ? pictures.equals(folder.pictures) : folder.pictures == null;
+        return true;
 
     }
 

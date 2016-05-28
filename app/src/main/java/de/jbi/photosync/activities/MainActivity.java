@@ -4,9 +4,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,8 +26,6 @@ import de.jbi.photosync.fragments.DashboardFragment;
 import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
 import de.jbi.photosync.fragments.SettingsFragment;
-import de.jbi.photosync.http.HttpClientFactory;
-import de.jbi.photosync.http.PhotoSyncBoundary;
 import de.jbi.photosync.domain.Folder;
 import de.jbi.photosync.utils.AndroidUtil;
 import de.jbi.photosync.utils.Logger;
@@ -31,6 +33,7 @@ import de.jbi.photosync.utils.Logger;
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    private Toolbar toolbar;
 
     private CharSequence title;
     private String[] fragmentTitles;
@@ -51,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
         // Set default preferences from preferences.xml
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        List<Folder> initialFolders = SharedPreferencesUtil.getFolders();
-        DataContentHandler.getInstance().setFolders(initialFolders);
+        // Load folders from SharedPreferences and set to global DataContentHandler
+        reloadInitialFolders();
 
         registerObserver();
 
@@ -67,11 +70,47 @@ public class MainActivity extends AppCompatActivity {
         drawerList.setAdapter(new ArrayAdapter<>(this, R.layout.list_drawer_item, fragmentTitles));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(myToolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_dehaze_black_24dp);
 
         if (savedInstanceState == null) {
             selectItem(0);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        reloadInitialFolders();
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadInitialFolders();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.toolbar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
         }
     }
 
@@ -128,6 +167,14 @@ public class MainActivity extends AppCompatActivity {
     public void setTitle(CharSequence title) {
         this.title = title;
         getSupportActionBar().setTitle(this.title);
+    }
+
+    private void reloadInitialFolders() {
+        List<Folder> initialFolders = SharedPreferencesUtil.getFolders();
+        for (Folder folder: initialFolders) {
+            folder.refreshFolderMetaData();
+        }
+        DataContentHandler.getInstance().setFolders(initialFolders);
     }
 
     private void registerObserver() {
