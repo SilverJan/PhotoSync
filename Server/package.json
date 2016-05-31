@@ -1,0 +1,48 @@
+{
+  "name": "PhotoSync-Server",
+  "version": "0.0.1",
+  "author": "Jan Bissinger",
+  "scripts": {
+    "tsc": "tsc",
+    "tsc:w": "tsc -w",
+    "typings": "typings",
+    "postinstall": "typings install",
+    "startnode": "babel-node --presets es2015 ./build/backend/lib/index.js"
+  },
+  "dependencies": {
+    "systemjs": "0.19.24",
+    "es6-promise": "^3.0.2",
+    "es6-shim": "^0.35.0",
+    "reflect-metadata": "0.1.2",
+    "zone.js": "0.6.4",
+    "express": "4.13.4",
+    "body-parser": "1.15.0",
+    "bootstrap": "4.0.0-alpha.2",
+    "multiparty": "4.1.2",
+    "moment": "2.13.0"
+  },
+  "devDependencies": {
+    "babel-cli": "6.7.5",
+    "babel-core": "6.7.2",
+    "babel-preset-es2015": "6.6.0",
+    "concurrently": "^2.0.0",
+    "del": "2.0.2",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-bundle-assets": "2.23.0",
+    "gulp-debug": "^2.0.1",
+    "gulp-uglify": "1.5.3",
+    "gulp-inject": "^1.2.0",
+    "gulp-rename": "latest",
+    "gulp-rimraf": "^0.1.1",
+    "gulp-if": "2.0.0",
+    "gulp-sourcemaps": "^1.5.1",
+    "gulp-tslint": "latest",
+    "gulp-typescript": "^2.9.0",
+    "nodemon": "1.9.1",
+    "shelljs": "0.6.0",
+    "tslint": "3.6.0",
+    "typescript": "^1.8.9",
+    "typings": "^0.7.9",
+    "yargs": "4.6.0"
+  }
+}
