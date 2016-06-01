@@ -1,4 +1,4 @@
-import {IPicture} from './picture';
+import {IPictureVideo} from './pictureVideo';
 export interface IFolder {
     _id?: string;
     absolutePath: string;
@@ -6,5 +6,5 @@ export interface IFolder {
     childAmount: number;
     size: number;
     selected: boolean;
-    pictures: IPicture[];
+    pictures: IPictureVideo[];
 }

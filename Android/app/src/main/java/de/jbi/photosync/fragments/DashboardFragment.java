@@ -35,8 +35,8 @@ import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.ServerDataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.domain.Folder;
-import de.jbi.photosync.domain.Picture;
-import de.jbi.photosync.domain.PictureTO;
+import de.jbi.photosync.domain.PictureVideo;
+import de.jbi.photosync.domain.PictureVideoTO;
 import de.jbi.photosync.http.PhotoSyncBoundary;
 import de.jbi.photosync.utils.Logger;
 import okhttp3.MediaType;
@@ -166,17 +166,18 @@ public class DashboardFragment extends Fragment implements Observer {
     /**
      * Helper class for picture upload
      */
-    private class PhotoUploadAsyncTask extends AsyncTask<Queue<Picture>, Integer, Void> {
+    private class PhotoUploadAsyncTask extends AsyncTask<Queue<PictureVideo>, Integer, Void> {
         private int max;
-        private int missing;
+        private Integer missing = null;
         private int tries = 0;
         private boolean aborted = false;
+        private Queue<PictureVideo> pictureVideoQueueComplete;
 
         @Override
         protected void onPreExecute() {
             max = syncInfoDialog.getMax();
             progressDialog.setTitle(getResources().getString(R.string.fragment_dashboard_syncing_progressbar_title));
-            progressDialog.setMessage("Uploading pictures...");
+            progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message));
             progressDialog.setMax(max);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.setProgress(0);
@@ -195,29 +196,32 @@ public class DashboardFragment extends Fragment implements Observer {
         }
 
         @Override
-        protected Void doInBackground(final Queue<Picture>... params) {
+        protected Void doInBackground(final Queue<PictureVideo>... params) {
             if (isCancelled()) {
                 return null;
             }
-            final Queue<Picture> picQueue = params[0];
+            final Queue<PictureVideo> picVidQueue = params[0];
+            if (pictureVideoQueueComplete == null) {
+                pictureVideoQueueComplete = picVidQueue;
+            }
 
-            if (picQueue.size() > 0) {
-                Picture pic = picQueue.element();
-                PictureTO picTO = convertPictureToPictureTO(pic);
+            if (picVidQueue.size() > 0) {
+                final PictureVideo picVid = picVidQueue.element();
+                PictureVideoTO picTO = convertPictureToPictureTO(picVid);
 
-                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), pic.getAbsolutePath());
+                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), picVid.getAbsolutePath());
                 MultipartBody.Part body = MultipartBody.Part.createFormData(picTO.getName(), picTO.getName(), requestFile);
-                String folderToPutInString = pic.getAbsolutePath().getParentFile().getName();
+                String folderToPutInString = picVid.getAbsolutePath().getParentFile().getName();
                 RequestBody folderToPutIn = RequestBody.create(MediaType.parse("multipart/form-data"), folderToPutInString);
 
-                PhotoSyncBoundary.getInstance().getPhotoSyncService().uploadPicture(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
+                PhotoSyncBoundary.getInstance().getPhotoSyncService().uploadPictureVideo(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             Logger.getInstance().appendLog("Post successful", false);
-                            picQueue.remove();
-                            publishProgress(max - picQueue.size());
-                            doInBackground(picQueue);
+                            picVidQueue.remove();
+                            publishProgress(max - picVidQueue.size());
+                            doInBackground(picVidQueue);
                         } else {
                             String message = "Response unsuccessful (" + response.code() + "): " + response.message();
                             Logger.getInstance().appendLog(message, false);
@@ -231,7 +235,7 @@ public class DashboardFragment extends Fragment implements Observer {
 
                         if (t instanceof SocketTimeoutException && tries < 3) {
                             tries++;
-                            doInBackground(picQueue);
+                            doInBackground(picVidQueue);
                         } else {
                             cancel(true);
                         }
@@ -252,19 +256,25 @@ public class DashboardFragment extends Fragment implements Observer {
                 Logger.getInstance().appendLog("Sync successful!", true);
                 SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), 0);
                 refreshDynamicUI();
+                return;
             }
+            progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message) + "\n\nFile: " + pictureVideoQueueComplete.peek().getName());
         }
 
         @Override
         protected void onCancelled() {
             // This is called instead of onPostExecute(), when cancel(true) -> Actually it is called in progressDialog cancel button onClickHandler
             progressDialog.dismiss();
+            if (aborted && missing == null) {
+                // happens, when cancelled unfortunately after start sync. There is a chance that pictureVideoQueueComplete is null but this is unlikely
+                missing = pictureVideoQueueComplete.size() - 1; // minus 1 because post was already made
+            }
             if (aborted && missing > 0) {
                 Logger.getInstance().appendLog("Sync cancelled by user. " + missing + " files missing!", true);
             } else if (aborted) {
-                // happens, when cancelled right at the end
+                // happens, when cancelled right at the end or in the beginning
                 Logger.getInstance().appendLog("Sync successful!", true);
-            } else{
+            } else {
                 Logger.getInstance().appendLog("Sync failed!", true);
             }
             SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), missing);
@@ -283,7 +293,7 @@ public class DashboardFragment extends Fragment implements Observer {
             syncInfoDialog.setMessage("Comparing local folders with server folders..");
             List<Folder> allServerFolders = ServerDataContentHandler.getInstance().getFolders();
             List<String> allServerFolderNames = Folder.getFolderNameList(allServerFolders);
-            List<Picture> allPicsToUpload = new ArrayList<>();
+            List<PictureVideo> allPicsVidsToUpload = new ArrayList<>();
 
             // STEP 2: Get all selected folders from client
             List<Folder> allClientFolders = DataContentHandler.getInstance().getFolders();
@@ -301,8 +311,8 @@ public class DashboardFragment extends Fragment implements Observer {
 
             // STEP 4: For all non-server-existing folders -> Add pictures to uploadList (missing folders will be added automatically)
             for (Folder completeFolderToUpload : completeFoldersToUpload) {
-                for (Picture clientPicInNewFolder : completeFolderToUpload.getPictures()) {
-                    allPicsToUpload.add(clientPicInNewFolder);
+                for (PictureVideo clientPicInNewFolder : completeFolderToUpload.getPictureVideos()) {
+                    allPicsVidsToUpload.add(clientPicInNewFolder);
                 }
             }
 
@@ -316,23 +326,23 @@ public class DashboardFragment extends Fragment implements Observer {
                     continue;
                 } else {
                     // STEP 7: For all pictures in a server-existing folder -> If clientPic !exists (name) on server -> Add to upload list
-                    List<Picture> allClientFolderPics = incompleteFolderToUpload.getPictures();
-                    List<Picture> allServerFolderPics = serverEqual.getPictures();
-                    List<String> allServerFolderPicsNames = Picture.getPictureNameList(allServerFolderPics);
+                    List<PictureVideo> allClientFolderPicsVids = incompleteFolderToUpload.getPictureVideos();
+                    List<PictureVideo> allServerFolderPics = serverEqual.getPictureVideos();
+                    List<String> allServerFolderPicsNames = PictureVideo.getPictureNameList(allServerFolderPics);
 
-                    for (Picture clientFolderPic : allClientFolderPics) {
-                        if (!allServerFolderPicsNames.contains(clientFolderPic.getName())) {
-                            allPicsToUpload.add(clientFolderPic);
+                    for (PictureVideo clientFolderPicVid : allClientFolderPicsVids) {
+                        if (!allServerFolderPicsNames.contains(clientFolderPicVid.getName())) {
+                            allPicsVidsToUpload.add(clientFolderPicVid);
                         }
                     }
                 }
             }
             // STEP 8: Upload all pictures from upload list
-            if (allPicsToUpload.size() > 0) {
-                Queue<Picture> picturesToUploadQueue = new LinkedList<>(allPicsToUpload);
+            if (allPicsVidsToUpload.size() > 0) {
+                Queue<PictureVideo> picsVidsToUploadQueue = new LinkedList<>(allPicsVidsToUpload);
 
-                syncInfoDialog.setMax(picturesToUploadQueue.size()); // This is a bad way to save max, refactor that!
-                new PhotoUploadAsyncTask().execute(picturesToUploadQueue);
+                syncInfoDialog.setMax(picsVidsToUploadQueue.size()); // This is a bad way to save max, refactor that!
+                new PhotoUploadAsyncTask().execute(picsVidsToUploadQueue);
             } else {
                 syncInfoDialog.dismiss();
                 Logger.getInstance().appendLog("Everything up-to-date!", true);

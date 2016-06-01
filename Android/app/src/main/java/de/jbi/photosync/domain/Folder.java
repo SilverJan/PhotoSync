@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
+import static de.jbi.photosync.utils.AndroidUtil.getAllPhotosAndVideos;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -23,16 +23,16 @@ public class Folder {
 
     private Boolean selected;
 
-    private List<Picture> pictures;
+    private List<PictureVideo> pictureVideos;
 
-    public Folder(File absolutePath, String name, int childAmount, long size, Boolean selected, List<Picture> pictures) {
+    public Folder(File absolutePath, String name, int childAmount, long size, Boolean selected, List<PictureVideo> pictureVideos) {
         this.id = UUID.randomUUID();
         this.absolutePath = absolutePath;
         this.name = name;
         this.childAmount = childAmount;
         this.size = size;
         this.selected = selected;
-        this.pictures = pictures;
+        this.pictureVideos = pictureVideos;
     }
 
     /**
@@ -44,10 +44,10 @@ public class Folder {
         this.id = UUID.randomUUID();
         this.absolutePath = file.getAbsoluteFile();
         this.name = file.getName();
-        this.childAmount = getAllPhotos(file, false).size();
+        this.childAmount = getAllPhotosAndVideos(file, false).size();
         this.selected = selected;
-        this.pictures = Picture.getPicturesFromFile(file);
-        this.size = getSizeFromPicturelist(Picture.getPicturesFromFile(file));
+        this.pictureVideos = PictureVideo.getPicturesAndVideosFromFile(file);
+        this.size = getSizeFromPicturelist(PictureVideo.getPicturesAndVideosFromFile(file));
     }
 
     public void setId(UUID id) {
@@ -116,19 +116,19 @@ public class Folder {
 
 
     /**
-     * The list of pictures (children of folder)
+     * The list of pictureVideos (children of folder)
      */
-    public List<Picture> getPictures() {
-        return pictures;
+    public List<PictureVideo> getPictureVideos() {
+        return pictureVideos;
     }
 
-    public void setPictures(List<Picture> pictures) {
-        for (Picture pic : pictures) {
+    public void setPictureVideos(List<PictureVideo> pictureVideos) {
+        for (PictureVideo pic : pictureVideos) {
             if (pic.getAbsolutePath().isDirectory()) {
                 throw new IllegalArgumentException("Argument is a directory: " + pic);
             }
         }
-        this.pictures = pictures;
+        this.pictureVideos = pictureVideos;
     }
 
     @Override
@@ -147,27 +147,27 @@ public class Folder {
      * Refreshes the childAmount, picture List and the size of the folder object
      */
     public void refreshFolderMetaData() {
-        this.childAmount = getAllPhotos(this.absolutePath, false).size();
-        this.pictures = Picture.getPicturesFromFile(this.absolutePath);
-        this.size = getSizeFromPicturelist(Picture.getPicturesFromFile(this.absolutePath));
+        this.childAmount = getAllPhotosAndVideos(this.absolutePath, false).size();
+        this.pictureVideos = PictureVideo.getPicturesAndVideosFromFile(this.absolutePath);
+        this.size = getSizeFromPicturelist(PictureVideo.getPicturesAndVideosFromFile(this.absolutePath));
     }
 
 
     /**
-     * Sums up the sizes of all passed pictures
+     * Sums up the sizes of all passed pictureVideos
      * @param picList
      * @return
      */
-    public static long getSizeFromPicturelist(List<Picture> picList) {
+    public static long getSizeFromPicturelist(List<PictureVideo> picList) {
         long size = 0;
-        for (Picture pic : picList) {
+        for (PictureVideo pic : picList) {
             size += pic.getSize();
         }
         return size;
     }
 
     public static long getSizeFromFolder(Folder folder) {
-        return getSizeFromPicturelist(folder.getPictures());
+        return getSizeFromPicturelist(folder.getPictureVideos());
     }
 
     /**
@@ -209,7 +209,7 @@ public class Folder {
         result = 31 * result + childAmount;
         result = 31 * result + (int) (size ^ (size >>> 32));
         result = 31 * result + (selected != null ? selected.hashCode() : 0);
-        result = 31 * result + (pictures != null ? pictures.hashCode() : 0);
+        result = 31 * result + (pictureVideos != null ? pictureVideos.hashCode() : 0);
         return result;
     }
 }

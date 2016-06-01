@@ -9,7 +9,7 @@ import de.jbi.photosync.utils.AndroidUtil;
 /**
  * Created by Jan on 19.05.2016.
  */
-public class Picture {
+public class PictureVideo {
 
     private File absolutePath;
 
@@ -17,7 +17,7 @@ public class Picture {
 
     private long size;
 
-    public Picture(File absolutePath, String name, long size) {
+    public PictureVideo(File absolutePath, String name, long size) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.size = size;
@@ -47,26 +47,26 @@ public class Picture {
         this.size = size;
     }
 
-    public static List<Picture> getPicturesFromFile(File parentFile) {
-        List<File> fileList = AndroidUtil.getAllPhotos(parentFile.getAbsoluteFile(), false);
-        List<Picture> pictureList = new ArrayList<>();
+    public static List<PictureVideo> getPicturesAndVideosFromFile(File parentFile) {
+        List<File> fileList = AndroidUtil.getAllPhotosAndVideos(parentFile.getAbsoluteFile(), false);
+        List<PictureVideo> pictureVideoList = new ArrayList<>();
 
         for (File file : fileList) {
-            Picture pic = new Picture(file.getAbsoluteFile(), file.getName(), file.length());
-            pictureList.add(pic);
+            PictureVideo pic = new PictureVideo(file.getAbsoluteFile(), file.getName(), file.length());
+            pictureVideoList.add(pic);
         }
-        return pictureList;
+        return pictureVideoList;
     }
 
     /**
      * Returns a new list of Strings that contain the names of the passed picture list
-     * @param pictureList
+     * @param pictureVideoList
      * @return
      */
-    public static List<String> getPictureNameList(List<Picture> pictureList) {
+    public static List<String> getPictureNameList(List<PictureVideo> pictureVideoList) {
         List<String> pictureNames = new ArrayList<>();
-        for(int i = 0; i != pictureList.size(); i++) {
-            pictureNames.add(pictureList.get(i).getName());
+        for(int i = 0; i != pictureVideoList.size(); i++) {
+            pictureNames.add(pictureVideoList.get(i).getName());
         }
         return pictureNames;
     }
@@ -76,11 +76,11 @@ public class Picture {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Picture picture = (Picture) o;
+        PictureVideo pictureVideo = (PictureVideo) o;
 
-        if (size != picture.size) return false;
-        if (!absolutePath.equals(picture.absolutePath)) return false;
-        return name != null ? name.equals(picture.name) : picture.name == null;
+        if (size != pictureVideo.size) return false;
+        if (!absolutePath.equals(pictureVideo.absolutePath)) return false;
+        return name != null ? name.equals(pictureVideo.name) : pictureVideo.name == null;
 
     }
 

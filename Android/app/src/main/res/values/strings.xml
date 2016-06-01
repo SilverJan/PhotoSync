@@ -27,4 +27,5 @@
     <string name="fragment_dashboard_last_sync">Last sync:&#160;</string>
     <string name="fragment_dashboard_sync">Sync</string>
     <string name="fragment_dashboard_syncing_progressbar_title">Syncing</string>
+    <string name="fragment_dashboard_progress_dialog_message">Uploading pictures and videos…</string>
 </resources>

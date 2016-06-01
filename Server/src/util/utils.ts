@@ -37,6 +37,21 @@ export function isPicture(fileName: string) {
     return false;
 }
 
+/**
+ * Returns true if a fileName ends with mp4, wmv
+ * @param fileName
+ * @returns {boolean}
+ */
+export function isVideo(fileName: string) {
+    if (fileName.endsWith('.mp4') || fileName.endsWith('.MP4')) {
+        return true;
+    }
+    if (fileName.endsWith('.wmv') || fileName.endsWith('.WMV')) {
+        return true;
+    }
+    return false;
+}
+
 /* tslint:disable:max-line-length */
 export function addSecurityHeader(req: Request, res: Response, next: NextFunction): void {
     // HSTS = HTTP Strict Transport Security

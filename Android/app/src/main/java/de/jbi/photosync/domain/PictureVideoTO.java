@@ -3,12 +3,10 @@ package de.jbi.photosync.domain;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.File;
-
 /**
  * Created by Jan on 19.05.2016.
  */
-public class PictureTO {
+public class PictureVideoTO {
     @SerializedName("absolutePath")
     @Expose
     public String absolutePath;
@@ -21,7 +19,7 @@ public class PictureTO {
     @Expose
     public long size;
 
-    public PictureTO(String absolutePath, String name, long size) {
+    public PictureVideoTO(String absolutePath, String name, long size) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.size = size;
@@ -53,7 +51,7 @@ public class PictureTO {
 
     @Override
     public String toString() {
-        return "PictureTO{" +
+        return "PictureVideoTO{" +
                 "absolutePath='" + absolutePath + '\'' +
                 ", name='" + name + '\'' +
                 ", size=" + size +
@@ -66,12 +64,12 @@ public class PictureTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PictureTO pictureTO = (PictureTO) o;
+        PictureVideoTO pictureVideoTO = (PictureVideoTO) o;
 
-        if (size != pictureTO.size) return false;
-        if (absolutePath != null ? !absolutePath.equals(pictureTO.absolutePath) : pictureTO.absolutePath != null)
+        if (size != pictureVideoTO.size) return false;
+        if (absolutePath != null ? !absolutePath.equals(pictureVideoTO.absolutePath) : pictureVideoTO.absolutePath != null)
             return false;
-        return name != null ? name.equals(pictureTO.name) : pictureTO.name == null;
+        return name != null ? name.equals(pictureVideoTO.name) : pictureVideoTO.name == null;
 
     }
 

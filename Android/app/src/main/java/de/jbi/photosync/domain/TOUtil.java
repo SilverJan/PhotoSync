@@ -14,25 +14,25 @@ public class TOUtil {
     // ###############
 
     /**
-     * Converts a PictureTO instance to a Picture instance
+     * Converts a PictureVideoTO instance to a PictureVideo instance
      * Needed for GSON and Retrofit
      *
-     * @param pictureTO
+     * @param pictureVideoTO
      * @return
      */
-    public static Picture convertPictureTOToPicture(PictureTO pictureTO) {
-        return new Picture(new File(pictureTO.getAbsolutePath()), pictureTO.getName(), pictureTO.getSize());
+    public static PictureVideo convertPictureTOToPicture(PictureVideoTO pictureVideoTO) {
+        return new PictureVideo(new File(pictureVideoTO.getAbsolutePath()), pictureVideoTO.getName(), pictureVideoTO.getSize());
     }
 
     /**
-     * Converts a Picture instance to a PictureTO instance
+     * Converts a PictureVideo instance to a PictureVideoTO instance
      * Needed for GSON and Retrofit
      *
-     * @param picture
+     * @param pictureVideo
      * @return
      */
-    public static PictureTO convertPictureToPictureTO(Picture picture) {
-        return new PictureTO(picture.getAbsolutePath().getAbsolutePath(), picture.getName(), picture.getSize());
+    public static PictureVideoTO convertPictureToPictureTO(PictureVideo pictureVideo) {
+        return new PictureVideoTO(pictureVideo.getAbsolutePath().getAbsolutePath(), pictureVideo.getName(), pictureVideo.getSize());
     }
 
     // ##############
@@ -47,11 +47,11 @@ public class TOUtil {
      * @return
      */
     public static Folder convertFolderTOtoFolder(FolderTO folderTO) {
-        List<Picture> pictureList = new ArrayList<>();
-        for (PictureTO picTO : folderTO.getPictureTOs()) {
-            pictureList.add(convertPictureTOToPicture(picTO));
+        List<PictureVideo> pictureVideoList = new ArrayList<>();
+        for (PictureVideoTO picTO : folderTO.getPictureVideoTOs()) {
+            pictureVideoList.add(convertPictureTOToPicture(picTO));
         }
-        return new Folder(new File(folderTO.getAbsolutePath()), folderTO.getName(), folderTO.getChildAmount(), folderTO.getSize(), folderTO.getSelected(), pictureList);
+        return new Folder(new File(folderTO.getAbsolutePath()), folderTO.getName(), folderTO.getChildAmount(), folderTO.getSize(), folderTO.getSelected(), pictureVideoList);
     }
 
     /**
@@ -62,10 +62,10 @@ public class TOUtil {
      * @return
      */
     public static FolderTO convertFolderToFolderTO(Folder folder) {
-        List<PictureTO> pictureTOs = new ArrayList<>();
-        for (Picture pic : folder.getPictures()) {
-            pictureTOs.add(convertPictureToPictureTO(pic));
+        List<PictureVideoTO> pictureVideoTOs = new ArrayList<>();
+        for (PictureVideo pic : folder.getPictureVideos()) {
+            pictureVideoTOs.add(convertPictureToPictureTO(pic));
         }
-        return new FolderTO(folder.getSelected(), folder.getId().toString(), folder.getAbsolutePath().getAbsolutePath(), folder.getName(), folder.getChildAmount(), folder.getSize(), pictureTOs);
+        return new FolderTO(folder.getSelected(), folder.getId().toString(), folder.getAbsolutePath().getAbsolutePath(), folder.getName(), folder.getChildAmount(), folder.getSize(), pictureVideoTOs);
     }
 }

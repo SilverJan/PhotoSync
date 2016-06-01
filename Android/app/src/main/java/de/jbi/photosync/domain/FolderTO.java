@@ -35,16 +35,16 @@ public class FolderTO {
 
     @SerializedName("pictures")
     @Expose
-    private List<PictureTO> pictureTOs;
+    private List<PictureVideoTO> pictureVideoTOs;
 
-    public FolderTO(Boolean selected, String id, String absolutePath, String name, int childAmount, long size, List<PictureTO> pictureTOs) {
+    public FolderTO(Boolean selected, String id, String absolutePath, String name, int childAmount, long size, List<PictureVideoTO> pictureVideoTOs) {
         this.selected = selected;
         this.id = id;
         this.absolutePath = absolutePath;
         this.name = name;
         this.childAmount = childAmount;
         this.size = size;
-        this.pictureTOs = pictureTOs;
+        this.pictureVideoTOs = pictureVideoTOs;
     }
 
     public String getId() {
@@ -95,12 +95,12 @@ public class FolderTO {
         this.selected = selected;
     }
 
-    public List<PictureTO> getPictureTOs() {
-        return pictureTOs;
+    public List<PictureVideoTO> getPictureVideoTOs() {
+        return pictureVideoTOs;
     }
 
-    public void setPictureTOs(List<PictureTO> pictureTOs) {
-        this.pictureTOs = pictureTOs;
+    public void setPictureVideoTOs(List<PictureVideoTO> pictureVideoTOs) {
+        this.pictureVideoTOs = pictureVideoTOs;
     }
 
     @Override

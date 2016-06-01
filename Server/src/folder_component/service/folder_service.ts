@@ -1,7 +1,7 @@
 import {IFolder} from '../model/folder';
-import {IPicture} from '../model/picture';
+import {IPictureVideo} from '../model/pictureVideo';
 import {Stats} from 'fs';
-import {isPicture, isStringNullOrEmpty} from '../../util/utils';
+import {isPicture, isStringNullOrEmpty, isVideo} from '../../util/utils';
 import {BACKUP_PATH} from '../../util/constants';
 import {Logger} from '../../util/logger';
 import forEachChild = ts.forEachChild;
@@ -43,7 +43,7 @@ export default class FolderService {
                     folder.childAmount = this.getFolderChildAmount(folder);
                     folder.size = this.getFolderSize(folder);
                     folder.selected = true;
-                    folder.pictures = this.getFolderPictures(folder);
+                    folder.pictures = this.getFolderPictureVideos(folder);
                     folders.push(folder);
                 }
 
@@ -86,7 +86,7 @@ export default class FolderService {
                 // STEP 3: Relocate file to new, correct file path
                 this.renameFile(unsortedFilePath, sortedFilePath, sortedFilePathParent);
 
-                Logger.logInfo(`File {${fileName}} successfully saved on server`,
+                Logger.logInfo(`File {${fileName}} (Folder = ${folderToPutIn}) successfully saved on server`,
                     'postPicture', this.clazzName);
                 resolve();
             } catch (err: any) {
@@ -115,12 +115,12 @@ export default class FolderService {
     }
 
     /**
-     * Returns an array of IPictures which lie beneath a folder
+     * Returns an array of IPicturesVideo which lie beneath a folder
      * @param folder
      * @returns {IPicture[]}
      */
-    getFolderPictures(folder: IFolder): IPicture[] {
-        let pictures: IPicture[] = [];
+    getFolderPictureVideos(folder: IFolder): IPictureVideo[] {
+        let pictures: IPictureVideo[] = [];
         let folderData = fs.readdirSync(folder.absolutePath);
 
         for (var i = 0; i !== folderData.length; i++) {
@@ -129,8 +129,8 @@ export default class FolderService {
             const fileData = this.getStats(filePath);
 
             if (!fileData.isDirectory()) {
-                if (isPicture(fileName)) {
-                    var picture = <IPicture>{};
+                if (isPicture(fileName) || isVideo(fileName)) {
+                    var picture = <IPictureVideo>{};
                     picture.absolutePath = filePath;
                     picture.name = fileName;
                     picture.size = fileData["size"];
@@ -159,7 +159,7 @@ export default class FolderService {
      */
     getFolderSize(folder: IFolder): number {
         let folderSize = 0;
-        const folderPictures = this.getFolderPictures(folder);
+        const folderPictures = this.getFolderPictureVideos(folder);
         for (let i = 0; i !== folderPictures.length; i++) {
             folderSize += folderPictures[i].size;
         }

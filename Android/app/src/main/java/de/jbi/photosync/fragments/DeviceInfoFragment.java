@@ -18,7 +18,7 @@ import de.jbi.photosync.R;
 import de.jbi.photosync.adapters.PhotoArrayAdapter;
 import de.jbi.photosync.utils.AndroidUtil;
 
-import static de.jbi.photosync.utils.AndroidUtil.getAllPhotos;
+import static de.jbi.photosync.utils.AndroidUtil.getAllPhotosAndVideos;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -61,13 +61,13 @@ public class DeviceInfoFragment extends Fragment {
         fileDirTV.append("\nRoot dir: " + Environment.getRootDirectory());
         fileDirTV.append("\nExt dir: " + Environment.getExternalStorageDirectory());
 
-        File firstPic = getAllPhotos(Environment.getExternalStorageDirectory(), true).get(0);
+        File firstPic = getAllPhotosAndVideos(Environment.getExternalStorageDirectory(), true).get(0);
 
         fileDirTV.append(firstPic.toString());
     }
 
     private void setPhotoView() {
-        ArrayList<File> allPhotos = (ArrayList) getAllPhotos(Environment.getExternalStorageDirectory(), true);
+        ArrayList<File> allPhotos = (ArrayList) getAllPhotosAndVideos(Environment.getExternalStorageDirectory(), true);
         ArrayList<File> severalPhotos = new ArrayList<>();
         for (int i = 0; i != 2; i++) {
             severalPhotos.add(allPhotos.get(i));

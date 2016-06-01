@@ -34,7 +34,7 @@ public interface PhotoSyncService {
 
     @Multipart
     @POST("folders/{folder}")
-    Call<ResponseBody> uploadPicture(@Header("foldertoputinheader") String folderToPutInHeader,
-                                     @Part("folderToPutIn") RequestBody folderToPutIn,
-                                     @Part MultipartBody.Part picture);
+    Call<ResponseBody> uploadPictureVideo(@Header("foldertoputinheader") String folderToPutInHeader,
+                                          @Part("folderToPutIn") RequestBody folderToPutIn,
+                                          @Part MultipartBody.Part picture);
 }

@@ -1,7 +1,5 @@
 package de.jbi.photosync.http;
 
-import android.util.Log;
-
 import com.google.gson.JsonSyntaxException;
 
 import org.jdeferred.Deferred;
@@ -12,15 +10,14 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.content.ServerDataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.domain.Folder;
 import de.jbi.photosync.domain.FolderTO;
-import de.jbi.photosync.domain.Picture;
-import de.jbi.photosync.domain.PictureTO;
+import de.jbi.photosync.domain.PictureVideo;
+import de.jbi.photosync.domain.PictureVideoTO;
 import de.jbi.photosync.fragments.SettingsFragment;
 import de.jbi.photosync.utils.AndroidUtil;
 import de.jbi.photosync.utils.Logger;
@@ -186,25 +183,25 @@ public class PhotoSyncBoundary {
     }
 
     /**
-     * Upload one picture to the server async
+     * Upload one picture or video to the server async
      * @param pic
      * @return
      */
-    public Promise uploadPictureAsync(Picture pic) {
+    public Promise uploadPictureVideoAsync(PictureVideo pic) {
         setBaseUrl();
         rebuildRetrofit();
 
         final Deferred deferred = new DeferredObject();
         Promise promise = deferred.promise();
 
-        PictureTO picTO = convertPictureToPictureTO(pic);
+        PictureVideoTO picTO = convertPictureToPictureTO(pic);
 
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), pic.getAbsolutePath());
         MultipartBody.Part body = MultipartBody.Part.createFormData(picTO.getName(), picTO.getName(), requestFile);
         String folderToPutInString = pic.getAbsolutePath().getParentFile().getName();
         RequestBody folderToPutIn = RequestBody.create(MediaType.parse("multipart/form-data"), folderToPutInString);
 
-        photoSyncService.uploadPicture(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
+        photoSyncService.uploadPictureVideo(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
@@ -233,7 +230,7 @@ public class PhotoSyncBoundary {
     }
 
 
-//    public Promise uploadPictureListAsync(List<Picture> pictureList) throws ExecutionException, InterruptedException {
+//    public Promise uploadPictureListAsync(List<PictureVideo> pictureList) throws ExecutionException, InterruptedException {
 //        progressReceived = 0;
 //        progressSent = 0;
 //
@@ -245,7 +242,7 @@ public class PhotoSyncBoundary {
 //        if (sum > 50) {
 //
 //        } else {
-//            for (Picture pic : pictureList) {
+//            for (PictureVideo pic : pictureList) {
 //                // Do this with AsyncTasks because of Thread_Pool_Executor -> Better handling of many async calls
 //                PhotoUploadAsyncTask asyncTask = new PhotoUploadAsyncTask();
 //                asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, pic)
@@ -269,11 +266,11 @@ public class PhotoSyncBoundary {
      * @param div        The factor of division
      * @return
      */
-    private List<List<Picture>> divideListInPieces(List<Picture> sourceList, int div) {
-        List<List<Picture>> listCollector = new ArrayList<>();
+    private List<List<PictureVideo>> divideListInPieces(List<PictureVideo> sourceList, int div) {
+        List<List<PictureVideo>> listCollector = new ArrayList<>();
 
         for (int i = 0; i != sourceList.size(); i += div) {
-            List<Picture> dividedPicList;
+            List<PictureVideo> dividedPicList;
             if (i + div > sourceList.size()) {
                 dividedPicList = sourceList.subList(i, sourceList.size());
                 listCollector.add(dividedPicList);

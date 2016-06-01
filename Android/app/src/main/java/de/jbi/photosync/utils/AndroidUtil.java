@@ -22,22 +22,23 @@ public class AndroidUtil {
     }
 
     /**
-     * Returns a list of all .jepg and .jpg files in a directory
+     * Returns a list of all .jepg, .jpg, .png, .mp4, .wmv files in a directory
      *
      * @param parentDir The parent directory to search in
      * @param recursive Pass true, if recursive search should be allowed
      * @return
      */
-    public static List<File> getAllPhotos(File parentDir, Boolean recursive) {
+    public static List<File> getAllPhotosAndVideos(File parentDir, Boolean recursive) {
         ArrayList<File> inFiles = new ArrayList<>();
         File[] files = parentDir.listFiles();
         for (File file : files) {
             if (file.isDirectory()) {
                 if (recursive) {
-                    inFiles.addAll(getAllPhotos(file, true));
+                    inFiles.addAll(getAllPhotosAndVideos(file, true));
                 }
             } else {
-                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg") || file.getName().endsWith(".png")) {
+                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg") || file.getName().endsWith(".png") ||
+                file.getName().endsWith(".mp4") || file.getName().endsWith(".wmv")) {
                     inFiles.add(file);
                 }
             }
