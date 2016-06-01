@@ -14,6 +14,7 @@ public class Logger extends Observable{
 
     private static Context ctx;
     private String log;
+    private static final String TAG = "PHOTOSYNC-LOG";
 
     public static Logger getInstance() {
         return ourInstance;
@@ -36,6 +37,7 @@ public class Logger extends Observable{
         log += message;
         setChanged();
         notifyObservers(log);
+        showInAndroidLog(message);
         if (showToast)
             showLogToast(message);
     }
@@ -43,5 +45,9 @@ public class Logger extends Observable{
     private void showLogToast(String msg) {
         // could fail, if ctx is null. ctx is set in MainActivity to secure its existence for the whole app lifecycle
         Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+    }
+
+    private void showInAndroidLog(String msg) {
+        Log.i(TAG, msg);
     }
 }
