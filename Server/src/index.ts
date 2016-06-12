@@ -21,7 +21,7 @@ class Server {
             .listen(this._port, this._host, () => {
                 console.log(
                     `Der Server ist gestartet: https://${this._host}:${this._port}`);
-            });
+            }).setTimeout(999999);
     }
 
     toString(): string {
