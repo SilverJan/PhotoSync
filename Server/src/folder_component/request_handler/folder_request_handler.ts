@@ -49,7 +49,7 @@ class FolderRouter {
         this._folderService
             .find()
             .then((folders: Array<IFolder>) => {
-                Logger.logInfo(JSON.stringify(folders), 'getByQuery', this.clazzName);
+                Logger.logInfo('Size of current available folders: ' + folders.length, 'getByQuery', this.clazzName);
                 res.json(folders);
             })
             .catch((err: any) => {
