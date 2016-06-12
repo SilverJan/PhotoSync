@@ -13,6 +13,7 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity
             android:name=".activities.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
