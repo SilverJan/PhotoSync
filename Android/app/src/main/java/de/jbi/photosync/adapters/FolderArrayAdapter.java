@@ -1,13 +1,11 @@
 package de.jbi.photosync.adapters;
 
 import android.content.Context;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +17,7 @@ import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.domain.Folder;
 
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
+import static de.jbi.photosync.utils.AndroidUtil.humanReadableByteCount;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -78,14 +77,6 @@ public class FolderArrayAdapter extends ArrayAdapter {
         });
 
         return view;
-    }
-
-    public static String humanReadableByteCount(long bytes, boolean si) {
-        int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
     private void handleRemoveFolder(int position) {

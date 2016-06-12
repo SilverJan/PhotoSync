@@ -16,6 +16,14 @@ public class DataContentHandler {
         return ourInstance;
     }
 
+    public static void setInstance(DataContentHandler dataContentHandler) throws IllegalAccessException {
+        if (ourInstance == null) {
+            ourInstance = dataContentHandler;
+        } else {
+            throw new IllegalAccessException("Instance is already set");
+        }
+    }
+
     private DataContentHandler() {
         folders = new ArrayList<>();
     }
@@ -54,7 +62,7 @@ public class DataContentHandler {
 
     public int getTotalAmountOfFiles() {
         int total = 0;
-        for (Folder folder: folders) {
+        for (Folder folder : folders) {
             total += folder.getChildAmount();
         }
         return total;

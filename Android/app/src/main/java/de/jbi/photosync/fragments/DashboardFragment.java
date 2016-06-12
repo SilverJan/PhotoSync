@@ -7,10 +7,14 @@ package de.jbi.photosync.fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,24 +25,25 @@ import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Queue;
 
+import javax.net.ssl.SSLException;
+
 import de.jbi.photosync.R;
+import de.jbi.photosync.content.ContentUtil;
 import de.jbi.photosync.content.DataContentHandler;
-import de.jbi.photosync.content.ServerDataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
-import de.jbi.photosync.domain.Folder;
 import de.jbi.photosync.domain.PictureVideo;
 import de.jbi.photosync.domain.PictureVideoTO;
+import de.jbi.photosync.http.FileUploadIntentService;
 import de.jbi.photosync.http.PhotoSyncBoundary;
+import de.jbi.photosync.utils.Constants;
 import de.jbi.photosync.utils.Logger;
+import de.jbi.photosync.utils.NotificationFactory;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -53,6 +58,7 @@ import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_NEW_
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_NEW_FOLDERS;
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_TIME;
 import static de.jbi.photosync.domain.TOUtil.convertPictureToPictureTO;
+import static de.jbi.photosync.utils.AndroidUtil.humanReadableByteCount;
 
 public class DashboardFragment extends Fragment implements Observer {
     private Activity activity;
@@ -66,8 +72,15 @@ public class DashboardFragment extends Fragment implements Observer {
     private TextView newFoldersInfoTV;
     private TextView newFileAmountInfoTV;
     private Button syncBtn;
+
     private ProgressDialog syncInfoDialog;
     private ProgressDialog progressDialog;
+    private boolean isFragmentVisible;
+
+    private Queue<PictureVideo> completePicsVidsToUploadQueue;
+    private int maxFilesToUpload;
+    private Integer missingFilesToUpload;
+    private Boolean aborted;
 
     DataContentHandler dataContentHandler = getInstance();
 
@@ -85,6 +98,7 @@ public class DashboardFragment extends Fragment implements Observer {
 
         setUI();
         setUIContents();
+        registerBroadcastReceiver();
 
         return rootView;
     }
@@ -93,6 +107,13 @@ public class DashboardFragment extends Fragment implements Observer {
     public void onResume() {
         super.onResume();
         setUIContents();
+        isFragmentVisible = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        isFragmentVisible = false;
     }
 
 
@@ -133,7 +154,12 @@ public class DashboardFragment extends Fragment implements Observer {
             // STEP 1: Get all folders from server and store in ServerDataContentHandler
             PhotoSyncBoundary.getInstance()
                     .getAllFoldersAsync()
-                    .done(new UploadPicturesCallBack())
+                    .done(new DoneCallback() {
+                        @Override
+                        public void onDone(Object result) {
+                            pushSyncBroadcast();
+                        }
+                    })
                     .fail(new FailCallback() {
                         @Override
                         public void onFail(Object result) {
@@ -233,8 +259,10 @@ public class DashboardFragment extends Fragment implements Observer {
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Logger.getInstance().appendLog("Response failed (Caused by Client): " + t.getMessage(), false);
 
-                        if (t instanceof SocketTimeoutException && tries < 3) {
+                        if (t instanceof SocketTimeoutException || t instanceof SSLException && tries < 3) {
                             tries++;
+                            PictureVideo toBeRequeued = picVidQueue.poll();
+                            picVidQueue.add(toBeRequeued);
                             doInBackground(picVidQueue);
                         } else {
                             cancel(true);
@@ -258,14 +286,15 @@ public class DashboardFragment extends Fragment implements Observer {
                 refreshDynamicUI();
                 return;
             }
-            progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message) + "\n\nFile: " + pictureVideoQueueComplete.peek().getName());
+            PictureVideo nextToUpload = pictureVideoQueueComplete.peek();
+            progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message) + "\n\nFile: " + nextToUpload.getName() + "(" + humanReadableByteCount(nextToUpload.getSize(), true) + ")");
         }
 
         @Override
         protected void onCancelled() {
             // This is called instead of onPostExecute(), when cancel(true) -> Actually it is called in progressDialog cancel button onClickHandler
             progressDialog.dismiss();
-            if (aborted && missing == null) {
+            if (missing == null) {
                 // happens, when cancelled unfortunately after start sync. There is a chance that pictureVideoQueueComplete is null but this is unlikely
                 missing = pictureVideoQueueComplete.size() - 1; // minus 1 because post was already made
             }
@@ -282,78 +311,107 @@ public class DashboardFragment extends Fragment implements Observer {
         }
     }
 
-    /**
-     * Class that handles the algorithm steps > 1
-     */
-    private class UploadPicturesCallBack implements DoneCallback {
+    private void registerBroadcastReceiver() {
+        IntentFilter statusIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public void onDone(Object result) {
-            syncInfoDialog.setMessage("Comparing local folders with server folders..");
-            List<Folder> allServerFolders = ServerDataContentHandler.getInstance().getFolders();
-            List<String> allServerFolderNames = Folder.getFolderNameList(allServerFolders);
-            List<PictureVideo> allPicsVidsToUpload = new ArrayList<>();
+        LocalBroadcastManager.getInstance(ctx).registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int progress = intent.getIntExtra(FileUploadIntentService.PROGRESS_TAG, Integer.MAX_VALUE);
+                progressDialog.setIndeterminate(false);
+                progressDialog.setProgress(progress);
+                missingFilesToUpload = maxFilesToUpload - progress;
 
-            // STEP 2: Get all selected folders from client
-            List<Folder> allClientFolders = DataContentHandler.getInstance().getFolders();
+                if (progress >= maxFilesToUpload) {
+                    progressDialog.dismiss();
+                    Logger.getInstance().appendLog("Sync successful!", true);
 
-            // STEP 3: Sort client folders to a) server-existing or b) non-server-existing list
-            List<Folder> completeFoldersToUpload = new ArrayList<>();
-            List<Folder> incompleteFoldersToUpload = new ArrayList<>();
-            for (Folder clientFolder : allClientFolders) {
-                if (!allServerFolderNames.contains(clientFolder.getName())) {
-                    completeFoldersToUpload.add(clientFolder);
-                } else {
-                    incompleteFoldersToUpload.add(clientFolder);
+                    SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), 0);
+                    }
+                    if (isAdded()) {
+                        refreshDynamicUI();
+                    }
+                    return;
+
                 }
-            }
+                PictureVideo nextToUpload = completePicsVidsToUploadQueue.poll();
+                if (nextToUpload != null) {
+                    progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message)
+                            + "\n\nFile: " + nextToUpload.getName()
+                            + " (" + humanReadableByteCount(nextToUpload.getSize(), true) + ")"
+                    );
 
-            // STEP 4: For all non-server-existing folders -> Add pictures to uploadList (missing folders will be added automatically)
-            for (Folder completeFolderToUpload : completeFoldersToUpload) {
-                for (PictureVideo clientPicInNewFolder : completeFolderToUpload.getPictureVideos()) {
-                    allPicsVidsToUpload.add(clientPicInNewFolder);
-                }
-            }
-
-            // STEP 5: For all server-existing folders -> Get server-equal-folder
-            for (Folder incompleteFolderToUpload : incompleteFoldersToUpload) {
-                int serverEqualIndex = allServerFolderNames.indexOf(incompleteFolderToUpload.getName());
-                Folder serverEqual = allServerFolders.get(serverEqualIndex);
-
-                // STEP 6: If server and client folder are equal (same size of pics) then do nothing
-                if (serverEqual.getSize() == incompleteFolderToUpload.getSize()) {
-                    continue;
-                } else {
-                    // STEP 7: For all pictures in a server-existing folder -> If clientPic !exists (name) on server -> Add to upload list
-                    List<PictureVideo> allClientFolderPicsVids = incompleteFolderToUpload.getPictureVideos();
-                    List<PictureVideo> allServerFolderPics = serverEqual.getPictureVideos();
-                    List<String> allServerFolderPicsNames = PictureVideo.getPictureNameList(allServerFolderPics);
-
-                    for (PictureVideo clientFolderPicVid : allClientFolderPicsVids) {
-                        if (!allServerFolderPicsNames.contains(clientFolderPicVid.getName())) {
-                            allPicsVidsToUpload.add(clientFolderPicVid);
-                        }
+                    if (!isFragmentVisible) {
+                        NotificationFactory.notify(notificationBuilder
+                                .setProgress(maxFilesToUpload, progress, false)
+                                .setContentText(progress + "/" + maxFilesToUpload + " Files synced")
+                                .buildNotification());
+                    } else {
+                        NotificationFactory.dismissNotification();
                     }
                 }
             }
-            // STEP 8: Upload all pictures from upload list
-            if (allPicsVidsToUpload.size() > 0) {
-                Queue<PictureVideo> picsVidsToUploadQueue = new LinkedList<>(allPicsVidsToUpload);
+        }, statusIntentFilter);
+    }
 
-                syncInfoDialog.setMax(picsVidsToUploadQueue.size()); // This is a bad way to save max, refactor that!
-                new PhotoUploadAsyncTask().execute(picsVidsToUploadQueue);
-            } else {
-                syncInfoDialog.dismiss();
-                Logger.getInstance().appendLog("Everything up-to-date!", true);
-            }
+    private void pushSyncBroadcast() {
+        syncInfoDialog.setMessage("Comparing local folders with server folders..");
+
+        completePicsVidsToUploadQueue = ContentUtil.getNewFilesToUploadQueue();
+
+        if (completePicsVidsToUploadQueue.size() > 0) {
+//                new PhotoUploadAsyncTask().execute(completePicsVidsToUploadQueue);
+
+            maxFilesToUpload = completePicsVidsToUploadQueue.size();
+            progressDialog.setTitle(getResources().getString(R.string.fragment_dashboard_syncing_progressbar_title));
+            progressDialog.setMessage(activity.getString(R.string.fragment_dashboard_progress_dialog_message));
+            progressDialog.setMax(maxFilesToUpload);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setProgress(0);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    FileUploadIntentService.cancelled = true;
+                    aborted = true;
+                    onCancelledSync();
+                }
+            });
+            syncInfoDialog.dismiss();
+            progressDialog.show();
+
+            // STEP 8: Upload all pictures from upload list
+            ctx.startService(new Intent(ctx, FileUploadIntentService.class));
+
+        } else {
+            syncInfoDialog.dismiss();
+            Logger.getInstance().appendLog("Everything up-to-date!", true);
         }
+    }
+
+    private void onCancelledSync() {
+        // This is called instead of onPostExecute(), when cancel(true) -> Actually it is called in progressDialog cancel button onClickHandler
+        progressDialog.dismiss();
+        if (missingFilesToUpload == null) {
+            // happens, when cancelled unfortunately after start sync. There is a chance that pictureVideoQueueComplete is null but this is unlikely
+            missingFilesToUpload = completePicsVidsToUploadQueue.size() - 1; // minus 1 because post was already made
+        }
+        if (aborted && missingFilesToUpload > 0) {
+            Logger.getInstance().appendLog("Sync cancelled by user. " + missingFilesToUpload + " files missing!", true);
+        } else if (aborted) {
+            // happens, when cancelled right at the end or in the beginning
+            Logger.getInstance().appendLog("Sync successful!", true);
+        } else {
+            Logger.getInstance().appendLog("Sync failed!", true);
+        }
+        SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), missingFilesToUpload);
+        refreshDynamicUI();
     }
 
     private void handleHttpError(Exception e) {
         syncInfoDialog.dismiss();
-        String logMessage = "Unhandled exception: " + e.getMessage();
-        Logger.getInstance().appendLog(logMessage, true);
+        Logger.getInstance().appendLog("Unhandled exception: " + e.getMessage(), true);
     }
 
     @Override

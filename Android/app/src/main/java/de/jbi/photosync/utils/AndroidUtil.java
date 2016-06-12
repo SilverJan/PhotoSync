@@ -22,6 +22,20 @@ public class AndroidUtil {
     }
 
     /**
+     * Returns a formatted human readable byte count string
+     * @param bytes
+     * @param si some way of formatting. Just pass true^^
+     * @return
+     */
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    /**
      * Returns a list of all .jepg, .jpg, .png, .mp4, .wmv files in a directory
      *
      * @param parentDir The parent directory to search in
