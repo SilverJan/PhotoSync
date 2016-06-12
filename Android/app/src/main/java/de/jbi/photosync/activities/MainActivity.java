@@ -2,13 +2,14 @@ package de.jbi.photosync.activities;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,8 +28,10 @@ import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
 import de.jbi.photosync.fragments.SettingsFragment;
 import de.jbi.photosync.domain.Folder;
+import de.jbi.photosync.http.FileUploadIntentService;
 import de.jbi.photosync.utils.AndroidUtil;
 import de.jbi.photosync.utils.Logger;
+import de.jbi.photosync.utils.NotificationFactory;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -79,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_dehaze_black_24dp);
 
+        // Remove potential notifications because they should only exist if app is hidden
+        NotificationFactory.dismissNotification();
+
         if (savedInstanceState == null) {
             selectItem(0);
         }
@@ -88,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         reloadInitialFolders();
+
+        // Remove potential notifications because they should only exist if app is hidden
+        NotificationFactory.dismissNotification();
     }
 
 
@@ -95,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         reloadInitialFolders();
+
+        // Remove potential notifications because they should only exist if app is hidden
+        NotificationFactory.dismissNotification();
     }
 
     @Override

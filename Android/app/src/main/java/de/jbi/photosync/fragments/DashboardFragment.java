@@ -75,6 +75,7 @@ public class DashboardFragment extends Fragment implements Observer {
 
     private ProgressDialog syncInfoDialog;
     private ProgressDialog progressDialog;
+    private NotificationFactory.NotificationBuilder notificationBuilder;
     private boolean isFragmentVisible;
 
     private Queue<PictureVideo> completePicsVidsToUploadQueue;
@@ -95,6 +96,7 @@ public class DashboardFragment extends Fragment implements Observer {
         ctx = activity.getApplicationContext();
         syncInfoDialog = new ProgressDialog(activity);
         progressDialog = new ProgressDialog(activity);
+        notificationBuilder = new NotificationFactory.NotificationBuilder();
 
         setUI();
         setUIContents();
@@ -327,6 +329,13 @@ public class DashboardFragment extends Fragment implements Observer {
                     Logger.getInstance().appendLog("Sync successful!", true);
 
                     SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), 0);
+                    if (!isFragmentVisible) {
+                        NotificationFactory.notify(notificationBuilder
+                                .setProgress(maxFilesToUpload, progress, false)
+                                .setContentText("Sync completed!")
+                                .buildNotification());
+                    } else {
+                        NotificationFactory.dismissNotification();
                     }
                     if (isAdded()) {
                         refreshDynamicUI();
@@ -393,6 +402,7 @@ public class DashboardFragment extends Fragment implements Observer {
     private void onCancelledSync() {
         // This is called instead of onPostExecute(), when cancel(true) -> Actually it is called in progressDialog cancel button onClickHandler
         progressDialog.dismiss();
+        NotificationFactory.dismissNotification();
         if (missingFilesToUpload == null) {
             // happens, when cancelled unfortunately after start sync. There is a chance that pictureVideoQueueComplete is null but this is unlikely
             missingFilesToUpload = completePicsVidsToUploadQueue.size() - 1; // minus 1 because post was already made
