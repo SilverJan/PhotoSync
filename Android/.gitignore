@@ -4,6 +4,7 @@
 /build
 /captures
 .idea
-.iml
-Android.iml
 app/src/androidTest/
+gradlew
+gradle/**
+gradlew.bat
