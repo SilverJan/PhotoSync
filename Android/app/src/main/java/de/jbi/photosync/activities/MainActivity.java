@@ -2,8 +2,6 @@ package de.jbi.photosync.activities;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
@@ -24,11 +22,9 @@ import de.jbi.photosync.R;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.fragments.DashboardFragment;
-import de.jbi.photosync.fragments.DeviceInfoFragment;
 import de.jbi.photosync.fragments.FolderSelectionFragment;
 import de.jbi.photosync.fragments.SettingsFragment;
 import de.jbi.photosync.domain.Folder;
-import de.jbi.photosync.http.FileUploadIntentService;
 import de.jbi.photosync.utils.AndroidUtil;
 import de.jbi.photosync.utils.Logger;
 import de.jbi.photosync.utils.NotificationFactory;
@@ -141,12 +137,9 @@ public class MainActivity extends AppCompatActivity {
                 handleDashboardFragment(fragment, position);
                 break;
             case 1:
-                fragment = new DeviceInfoFragment();
-                break;
-            case 2:
                 fragment = new FolderSelectionFragment();
                 break;
-            case 3:
+            case 2:
                 fragment = new SettingsFragment();
                 break;
             default:

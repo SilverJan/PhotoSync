@@ -5,7 +5,6 @@
     <string name="shared_preference_meta">PhotoSyncMeta</string>
     <string-array name="fragments_array">
         <item>Home</item>
-        <item>Device Infos</item>
         <item>Folder selection</item>
         <item>Settings</item>
     </string-array>
