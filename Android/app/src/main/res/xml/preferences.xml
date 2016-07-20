@@ -5,14 +5,28 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
     </EditTextPreference>
-    <EditTextPreference
-        android:defaultValue="@string/default_ip"
-        android:key="pref_server_ip"
-        android:summary="Enter the server IP address"
-        android:title="Server IP"></EditTextPreference>
-    <EditTextPreference
-        android:defaultValue="@string/default_port"
-        android:key="pref_server_port"
-        android:summary="Enter the server IP port"
-        android:title="Server Port"></EditTextPreference>
+    <PreferenceCategory android:title="@string/prefs_category_server_settings">
+        <EditTextPreference
+            android:defaultValue="@string/default_ip"
+            android:key="@string/prefs_server_ip_edit_text"
+            android:summary="Enter the server IP address"
+            android:title="Server IP"></EditTextPreference>
+        <EditTextPreference
+            android:defaultValue="@string/default_port"
+            android:key="@string/prefs_server_port_edit_text"
+            android:summary="Enter the server IP port"
+            android:title="Server port"></EditTextPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/prefs_category_sync_settings">
+        <SwitchPreference
+            android:key="@string/prefs_file_validation_switch"
+            android:summary="Validate new pictures and videos before sync?"
+            android:title="Pre-Sync validation"></SwitchPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/prefs_category_backup_settings">
+        <Preference
+            android:key="@string/prefs_backup_btn"
+            android:summary="Click to request a backup of your folders"
+            android:title="Backup folders"></Preference>
+    </PreferenceCategory>
 </PreferenceScreen>

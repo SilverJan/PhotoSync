@@ -66,15 +66,15 @@ public class PhotoSyncBoundary {
     }
 
     public void setBaseUrl() {
-        String ip = SharedPreferencesUtil.getAnyValue(SettingsFragment.KEY_PREF_SERVER_IP);
-        String port = SharedPreferencesUtil.getAnyValue(SettingsFragment.KEY_PREF_SERVER_PORT);
+        String ip = SharedPreferencesUtil.getAnyStringValue(SettingsFragment.KEY_PREF_SERVER_IP);
+        String port = SharedPreferencesUtil.getAnyStringValue(SettingsFragment.KEY_PREF_SERVER_PORT);
 
         if (AndroidUtil.isPortInvalid(port)) {
             Logger.getInstance().appendLog("Invalid port: " + port + "\nUse default port now", true);
             port = default_port;
         }
         if (AndroidUtil.isIpInvalid(ip)) {
-            Logger.getInstance().appendLog("Invalid ip: " + ip + "\nUse default ip now", true);
+            Logger.getInstance().appendLog("Invalid IP: " + ip + "\nUse default IP address now", true);
             ip = default_ip;
         }
 

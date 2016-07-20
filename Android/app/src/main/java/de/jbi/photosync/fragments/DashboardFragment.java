@@ -15,17 +15,25 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 
+import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -34,6 +42,8 @@ import java.util.Queue;
 import javax.net.ssl.SSLException;
 
 import de.jbi.photosync.R;
+import de.jbi.photosync.activities.MainActivity;
+import de.jbi.photosync.activities.PhotoSelectorActivity;
 import de.jbi.photosync.content.ContentUtil;
 import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
@@ -52,6 +62,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static de.jbi.photosync.utils.Constants.EXTRA_PICTURE_VIDEO_LIST;
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_MISSING_FILES;
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_NEW_FILES;
@@ -61,17 +72,21 @@ import static de.jbi.photosync.domain.TOUtil.convertPictureToPictureTO;
 import static de.jbi.photosync.utils.AndroidUtil.humanReadableByteCount;
 
 public class DashboardFragment extends Fragment implements Observer {
-    private Activity activity;
+    private MainActivity activity;
     private Context ctx;
     private View rootView;
 
     public static final String ARG_FRAGMENT_NUMBER = "fragment_number";
+    private CardView goToFolderCardView;
     private TextView selectedFoldersInfoTV;
     private TextView totalFileAmountTV;
     private TextView lastSyncTV;
     private TextView newFoldersInfoTV;
     private TextView newFileAmountInfoTV;
-    private Button syncBtn;
+    private ImageButton syncBtn;
+    private Button goToFolderSelBtn;
+    private Button goToFolderSelHideBtn;
+    private ImageButton refreshDataBtn;
 
     private ProgressDialog syncInfoDialog;
     private ProgressDialog progressDialog;
@@ -92,7 +107,7 @@ public class DashboardFragment extends Fragment implements Observer {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        activity = getActivity();
+        activity = (MainActivity) getActivity();
         ctx = activity.getApplicationContext();
         syncInfoDialog = new ProgressDialog(activity);
         progressDialog = new ProgressDialog(activity);
@@ -103,6 +118,35 @@ public class DashboardFragment extends Fragment implements Observer {
         registerBroadcastReceiver();
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PhotoSelectorActivity.FINISH_PHOTO_SELECTOR_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                String obj = data.getStringExtra(Constants.PASS_SYNC_MAX_COUNTER_AFTER_FILE_VALIDATION_INTENT);
+                Type type = new TypeToken<List<PictureVideo>>() {
+                }.getType();
+                List<PictureVideo> filesToSyncAfterValidation = new Gson().fromJson(obj, type);
+
+                if (filesToSyncAfterValidation.size() == 0) {
+                    // No files selected after pre-selection
+                    Logger.getInstance().appendLog("No files to sync after pre-selection!", true);
+                    SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), maxFilesToUpload);
+                    refreshDynamicUI();
+                } else {
+                    // Only show progress dialog if there is something to upload
+                    progressDialog.show();
+                    progressDialog.setMax(filesToSyncAfterValidation.size());
+                }
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Pressed back button in PhotoSelectorActivity
+                aborted = true;
+                missingFilesToUpload = maxFilesToUpload;
+                onCancelledSync();
+            }
+        }
     }
 
     @Override
@@ -125,23 +169,45 @@ public class DashboardFragment extends Fragment implements Observer {
         newFoldersInfoTV = (TextView) rootView.findViewById(R.id.fragment_dashboard_newSelectedFoldersInfoTextView);
         newFileAmountInfoTV = (TextView) rootView.findViewById(R.id.fragment_dashboard_newFileAmountTextView);
         lastSyncTV = (TextView) rootView.findViewById(R.id.fragment_dashboard_lastSyncTextView);
-        syncBtn = (Button) rootView.findViewById(R.id.fragment_dashboard_syncButton);
+        syncBtn = (ImageButton) rootView.findViewById(R.id.fragment_dashboard_sync_button);
+        goToFolderCardView = (CardView) rootView.findViewById(R.id.fragment_dashboard_goToFolderSelection_card_view);
+        goToFolderSelBtn = (Button) rootView.findViewById(R.id.fragment_dashboard_goToFolderSelection_button);
+        goToFolderSelHideBtn = (Button) rootView.findViewById(R.id.fragment_dashboard_goToFolderSelectionHide_button);
+        refreshDataBtn = (ImageButton) rootView.findViewById(R.id.fragment_dashboard_refreshData_button);
+
+        refreshDataBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.reloadInitialFolders();
+                refreshDynamicUI();
+            }
+        });
+
+        goToFolderSelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.selectFragment(1); // TODO hard coded sucks
+            }
+        });
+
+        goToFolderSelHideBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToFolderCardView.setVisibility(View.INVISIBLE);
+            }
+        });
 
         syncBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO add update of lastsync text view
-
                 handleSync();
             }
         });
     }
 
     private void setUIContents() {
-        selectedFoldersInfoTV.setText(getString(R.string.fragment_dashboard_total_selected_folders_info));
-        selectedFoldersInfoTV.append(Integer.toString(dataContentHandler.getFolders().size()));
-        totalFileAmountTV.setText(getString(R.string.fragment_dashboard_total_amount_of_files));
-        totalFileAmountTV.append(Integer.toString(dataContentHandler.getTotalAmountOfFiles()));
+        selectedFoldersInfoTV.setText(Integer.toString(dataContentHandler.getFolders().size()));
+        totalFileAmountTV.setText(Integer.toString(dataContentHandler.getTotalAmountOfFiles()));
         refreshDynamicUI();
     }
 
@@ -178,22 +244,21 @@ public class DashboardFragment extends Fragment implements Observer {
      */
     private void refreshDynamicUI() {
         Map<String, String> lastSyncMeta = SharedPreferencesUtil.getMetaData();
-        lastSyncTV.setText(getString(R.string.fragment_dashboard_last_sync));
-        lastSyncTV.append(lastSyncMeta.get(META_LAST_SYNC_TIME));
+        lastSyncTV.setText(lastSyncMeta.get(META_LAST_SYNC_TIME));
+        lastSyncTV.refreshDrawableState();
 
-        newFoldersInfoTV.setText(getString(R.string.fragment_dashboard_new_folders_since_last_sync));
         Integer folderDiff = dataContentHandler.getFolders().size() - Integer.parseInt(lastSyncMeta.get(META_LAST_SYNC_NEW_FOLDERS));
-        newFoldersInfoTV.append(folderDiff.toString());
+        newFoldersInfoTV.setText(folderDiff.toString());
 
         // Last time: 10 files - Now: 15 files + 5 missing files from last sync = 10 new files, also negative possible
-        newFileAmountInfoTV.setText(getString(R.string.fragment_dashboard_new_files_since_last_sync));
         Integer filesDiff = (dataContentHandler.getTotalAmountOfFiles() - Integer.parseInt(lastSyncMeta.get(META_LAST_SYNC_NEW_FILES))) + Integer.parseInt(lastSyncMeta.get(META_LAST_SYNC_MISSING_FILES));
-        newFileAmountInfoTV.append(filesDiff.toString());
+        newFileAmountInfoTV.setText(filesDiff.toString());
     }
 
     /**
      * Helper class for picture upload
      */
+    @Deprecated
     private class PhotoUploadAsyncTask extends AsyncTask<Queue<PictureVideo>, Integer, Void> {
         private int max;
         private Integer missing = null;
@@ -324,11 +389,10 @@ public class DashboardFragment extends Fragment implements Observer {
                 progressDialog.setProgress(progress);
                 missingFilesToUpload = maxFilesToUpload - progress;
 
-                if (progress >= maxFilesToUpload) {
+                if (progress == maxFilesToUpload) {
                     progressDialog.dismiss();
                     Logger.getInstance().appendLog("Sync successful!", true);
 
-                    SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), 0);
                     if (!isFragmentVisible) {
                         NotificationFactory.notify(notificationBuilder
                                 .setProgress(maxFilesToUpload, progress, false)
@@ -342,6 +406,8 @@ public class DashboardFragment extends Fragment implements Observer {
                     }
                     return;
 
+                } else if (progress > maxFilesToUpload) {
+                    return;
                 }
                 PictureVideo nextToUpload = completePicsVidsToUploadQueue.poll();
                 if (nextToUpload != null) {
@@ -367,6 +433,7 @@ public class DashboardFragment extends Fragment implements Observer {
         syncInfoDialog.setMessage("Comparing local folders with server folders..");
 
         completePicsVidsToUploadQueue = ContentUtil.getNewFilesToUploadQueue();
+        SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), 0);
 
         if (completePicsVidsToUploadQueue.size() > 0) {
 //                new PhotoUploadAsyncTask().execute(completePicsVidsToUploadQueue);
@@ -388,14 +455,21 @@ public class DashboardFragment extends Fragment implements Observer {
                 }
             });
             syncInfoDialog.dismiss();
-            progressDialog.show();
 
-            // STEP 8: Upload all pictures from upload list
-            ctx.startService(new Intent(ctx, FileUploadIntentService.class));
-
+            // STEP 8: Check for pre file validation
+            if (SharedPreferencesUtil.getAnyBooleanValue(SettingsFragment.KEY_PREF_FILE_VALIDATION)) {
+                Intent startPhotoSelActIntent = new Intent(ctx, PhotoSelectorActivity.class).putExtra(EXTRA_PICTURE_VIDEO_LIST, new Gson().toJson(completePicsVidsToUploadQueue.toArray()));
+                startActivityForResult(startPhotoSelActIntent, PhotoSelectorActivity.FINISH_PHOTO_SELECTOR_REQUEST_CODE);
+            } else {
+                progressDialog.show();
+                // STEP 9: Upload all pictures from upload list
+                Intent startFileUploadServiceIntent = new Intent(ctx, FileUploadIntentService.class).putExtra(EXTRA_PICTURE_VIDEO_LIST, new Gson().toJson(completePicsVidsToUploadQueue));
+                ctx.startService(startFileUploadServiceIntent);
+            }
         } else {
             syncInfoDialog.dismiss();
             Logger.getInstance().appendLog("Everything up-to-date!", true);
+            refreshDynamicUI();
         }
     }
 

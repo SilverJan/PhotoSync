@@ -1,5 +1,7 @@
 package de.jbi.photosync.domain;
 
+import com.google.gson.Gson;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +86,7 @@ public class Folder {
      * The amount of files inside of the folder
      */
     public int getChildAmount() {
-        return childAmount;
+        return getAllPhotosAndVideos(this.absolutePath, false).size();
     }
 
     public void setChildAmount(int childAmount) {
@@ -194,9 +196,8 @@ public class Folder {
 //        if (size != folder.size) return false;
         if (id != null ? !id.equals(folder.id) : folder.id != null) return false;
         if (!absolutePath.equals(folder.absolutePath)) return false;
-        if (name != null ? !name.equals(folder.name) : folder.name != null) return false;
-        if (selected != null ? !selected.equals(folder.selected) : folder.selected != null)
-            return false;
+//        if (name != null ? !name.equals(folder.name) : folder.name != null) return false;
+//        if (selected != null ? !selected.equals(folder.selected) : folder.selected != null) return false;
         return true;
 
     }
@@ -212,4 +213,15 @@ public class Folder {
         result = 31 * result + (pictureVideos != null ? pictureVideos.hashCode() : 0);
         return result;
     }
+
+    public static String serializeGson(Folder folder) {
+        Gson gson = new Gson();
+        return gson.toJson(folder);
+    }
+
+    public static Folder deserializeGson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, Folder.class);
+    }
+
 }

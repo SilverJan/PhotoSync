@@ -1,10 +1,8 @@
 <resources>
     <!-- Development constants -->
     <string name="app_name">PhotoSync</string>
-    <string name="shared_preference_data">PhotoSyncData</string>
-    <string name="shared_preference_meta">PhotoSyncMeta</string>
     <string-array name="fragments_array">
-        <item>Home</item>
+        <item>Dashboard</item>
         <item>Folder selection</item>
         <item>Settings</item>
     </string-array>
@@ -14,17 +12,44 @@
     <string name="default_ip">192.168.178.46</string>
 
     <!-- Folder selection fragment -->
-    <string name="fragment_folder_selection_long_press_info">Long-press a row for more information\n</string>
+    <string name="fragment_folder_selection_long_press_info">Long-press a row to give it an alias name&#160;</string>
     <string name="fragment_folder_selection_add_folder">Add folder</string>
     <string name="fragment_folder_selection_remove_all_folders">Remove all folders</string>
 
     <!-- Dashboard fragment -->
-    <string name="fragment_dashboard_total_selected_folders_info">Total selected folders:&#160;</string>
-    <string name="fragment_dashboard_total_amount_of_files">Total amount of files:&#160;</string>
-    <string name="fragment_dashboard_new_folders_since_last_sync">New / Missing folders since last sync:&#160;</string>
-    <string name="fragment_dashboard_new_files_since_last_sync">New / Missing files since last sync:&#160;</string>
-    <string name="fragment_dashboard_last_sync">Last sync:&#160;</string>
-    <string name="fragment_dashboard_sync">Sync</string>
+    <string name="fragment_dashboard_total_selected_folders_info">Total selected folders&#160;</string>
+    <string name="fragment_dashboard_total_amount_of_files">Total amount of files&#160;</string>
+    <string name="fragment_dashboard_new_folders_since_last_sync">New / Missing folders since last sync&#160;</string>
+    <string name="fragment_dashboard_new_files_since_last_sync">New / Missing files since last sync&#160;</string>
+    <string name="fragment_dashboard_last_sync">Last sync&#160;</string>
+    <string name="fragment_dashboard_go_to_folder_selection">Wanna change tha folder selection?</string>
+    <string name="fragment_dashboard_go_to_folder_selection_yes">Yes</string>
+    <string name="fragment_dashboard_refresh_data_selection">Click to refresh data!</string>
+    <string name="fragment_dashboard_go_to_folder_selection_hide">Hide</string>
+    <string name="fragment_dashboard_sync_text_view">Sync now!</string>
+    <string name="fragment_dashboard_sync_btn">Sync</string>
     <string name="fragment_dashboard_syncing_progressbar_title">Syncing</string>
     <string name="fragment_dashboard_progress_dialog_message">Uploading pictures and videos…</string>
+
+    <!-- Edit folder activity -->
+    <string name="activity_edit_folder_submit">Submit</string>
+
+    <!-- Photo selector activity -->
+    <string name="activity_photo_selector_back">Back</string>
+    <string name="activity_photo_selector_next">Next</string>
+    <string name="activity_photo_selector_sync">Sync</string>
+    <string name="activity_photo_selector_include_in_sync_checkbox">Include in sync</string>
+    <string name="activity_photo_selector_exclude_globally_checkbox">Exclude globally</string>
+
+
+
+    <!-- Preferences -->
+    <string name="prefs_category_server_settings">Server settings</string>
+    <string name="prefs_category_backup_settings">Backup settings</string>
+    <string name="prefs_category_sync_settings">Synchronization settings</string>
+    <string name="prefs_backup_btn">pref_backup_btn</string>
+    <string name="prefs_file_validation_switch">pref_switch_file_validation_switch</string>
+    <string name="prefs_server_ip_edit_text">pref_server_ip_edit_text</string>
+    <string name="prefs_server_port_edit_text">pref_server_port_edit_text</string>
+
 </resources>

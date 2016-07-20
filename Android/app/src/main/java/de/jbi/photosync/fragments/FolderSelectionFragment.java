@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -22,6 +24,9 @@ import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.content.SharedPreferencesUtil;
 import de.jbi.photosync.domain.Folder;
 import de.jbi.photosync.utils.FileChooser;
+
+import static de.jbi.photosync.R.drawable.ic_delete_sweep_black_24dp;
+import static de.jbi.photosync.utils.BackupAgent.requestAppBackup;
 
 /**
  * Created by Jan on 14.05.2016.
@@ -46,11 +51,17 @@ public class FolderSelectionFragment extends Fragment {
         dataContentHandler = DataContentHandler.getInstance();
 
         setFolderContainerInit();
-        setDetailsListViewClickListener();
+//        setDetailsListViewClickListener();
         setAddFolderBtnClickListener();
         handleTemplateRow();
 
         return rootView;
+    }
+
+    public void onResume() {
+        super.onResume();
+        folderArrayAdapter.refreshAdapterAndLoadData();
+
     }
 
     /**
@@ -62,26 +73,6 @@ public class FolderSelectionFragment extends Fragment {
         folderArrayAdapter = new FolderArrayAdapter(ctx, R.layout.list_folder_item, allSelectedFolders);
         ListView folderListView = (ListView) rootView.findViewById(R.id.folderContainerListView);
         folderListView.setAdapter(folderArrayAdapter);
-    }
-
-    private void setDetailsListViewClickListener() {
-        ListView folderListView = (ListView) rootView.findViewById(R.id.folderContainerListView);
-        folderListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                handleLongClick(position);
-                return true;
-            }
-        });
-    }
-
-    /**
-     * Make a toast with absolute path
-     *
-     * @param position
-     */
-    private void handleLongClick(int position) {
-        Toast.makeText(ctx, dataContentHandler.getFolders().get(position).getAbsolutePath().getPath(), Toast.LENGTH_SHORT).show();
     }
 
     private void setAddFolderBtnClickListener() {
@@ -106,6 +97,7 @@ public class FolderSelectionFragment extends Fragment {
                 try {
                     dataContentHandler.addFolder(folderToAdd);
                     SharedPreferencesUtil.addFolder(folderToAdd);
+                    requestAppBackup();
 
                     // Workaround for adapter, Observer would be cooler
                     folderArrayAdapter.refreshAdapterAndLoadData();
@@ -122,17 +114,19 @@ public class FolderSelectionFragment extends Fragment {
      */
     private void handleTemplateRow() {
         LinearLayout ll = (LinearLayout) rootView.findViewById(R.id.infoTemplate);
-        Button templateRemoveBtn = (Button) ll.findViewById(R.id.folderRemoveButton);
+        ImageButton templateRemoveBtn = (ImageButton) ll.findViewById(R.id.folderRemoveButton);
         templateRemoveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SharedPreferencesUtil.cleanFolderStorage();
+                requestAppBackup();
 
                 // Workaround for adapter
                 folderArrayAdapter.refreshAdapterAndLoadData();
             }
         });
-        templateRemoveBtn.setText("REMOVE ALL");
-        templateRemoveBtn.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_delete_sweep_black_24dp, null), null, null);
+        templateRemoveBtn.setImageDrawable(getResources().getDrawable(ic_delete_sweep_black_24dp, null));
+//        templateRemoveBtn.setText("REMOVE ALL");
+//        templateRemoveBtn.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_delete_sweep_black_24dp, null), null, null);
     }
 }

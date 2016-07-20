@@ -1,11 +1,22 @@
 package de.jbi.photosync.utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.support.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.jbi.photosync.domain.PictureVideo;
 
 /**
  * Created by Jan on 13.05.2016.
@@ -19,6 +30,12 @@ public class AndroidUtil {
             return true;
         }
         return false;
+    }
+
+    public static Bitmap getBitmapFromFile(File src) {
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeFile(src.getAbsolutePath(),bmOptions);
+        return Bitmap.createScaledBitmap(bitmap,bitmap.getScaledWidth(500),bitmap.getScaledHeight(500),true);
     }
 
     /**
@@ -82,12 +99,26 @@ public class AndroidUtil {
     }
 
     public static boolean isPortInvalid(String port) {
-        return port.length() > 4 || port == null || port.equals("");
+        return port == null || port.length() > 4 || port.equals("") || port.length() < 1;
     }
 
     public static boolean isIpInvalid(String url) {
-        // TODO add regexp
-        return url == null || url.equals("");
+        return url == null || url.equals("") || !url.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+    }
+
+    public static boolean pingInetAddress(InetAddress address, @Nullable Integer timeout) throws IOException {
+        if (timeout != null) {
+            return address.isReachable(timeout);
+        }
+        return address.isReachable(15000);
+    }
+
+    public static String serialize(Object obj) {
+        return new Gson().toJson(obj);
+    }
+
+    public static <T extends Object> T deserialize(String json, Class<T> clazz) {
+        return new Gson().fromJson(json, clazz);
     }
 
     public static class ContextHandler {

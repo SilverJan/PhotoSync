@@ -4,12 +4,17 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
+import java.util.LinkedList;
 import java.util.Queue;
 
 import javax.net.ssl.SSLException;
 
-import de.jbi.photosync.content.ContentUtil;
+import de.jbi.photosync.content.DataContentHandler;
 import de.jbi.photosync.domain.PictureVideo;
 import de.jbi.photosync.domain.PictureVideoTO;
 import de.jbi.photosync.utils.Constants;
@@ -40,10 +45,21 @@ public class FileUploadIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         cancelled = false;
-        final Queue<PictureVideo> picVidQueue = ContentUtil.getNewFilesToUploadQueue(); // That is made 2 times, once here and once in DashboardFragment TODO -> Refactor it
 
-        if (picVidQueue.size() == 0) {
-            throw new IllegalStateException("This cannot happen. The IntentService should only be called, when there are files to synchronize!");
+        String obj = intent.getStringExtra(Constants.EXTRA_PICTURE_VIDEO_LIST);
+        Type type = new TypeToken<LinkedList<PictureVideo>>() {
+        }.getType();
+        final Queue<PictureVideo> picVidQueue = new Gson().fromJson(obj, type);
+
+        if (picVidQueue == null || picVidQueue.size() == 0) {
+//            throw new IllegalStateException("This cannot happen. The IntentService should only be called, when there are files to synchronize!");
+            return;
+        }
+
+        for (PictureVideo picVid : picVidQueue) {
+            if (!picVid.isEnabled()) {
+                picVidQueue.remove();
+            }
         }
         pictureVideoQueueComplete = picVidQueue;
         max = pictureVideoQueueComplete.size();
@@ -57,7 +73,9 @@ public class FileUploadIntentService extends IntentService {
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), picVid.getAbsolutePath());
             MultipartBody.Part body = MultipartBody.Part.createFormData(picTO.getName(), picTO.getName(), requestFile);
-            String folderToPutInString = picVid.getAbsolutePath().getParentFile().getName();
+
+            // Take the folder instance name (which can be an alias) instead of the real folder name
+            String folderToPutInString = DataContentHandler.getInstance().findFolderByPath(picVid.getAbsolutePath().getParentFile()).getName();
             RequestBody folderToPutIn = RequestBody.create(MediaType.parse("multipart/form-data"), folderToPutInString);
 
             PhotoSyncBoundary.getInstance().getPhotoSyncService().uploadPictureVideo(folderToPutInString, folderToPutIn, body).enqueue(new Callback<ResponseBody>() {

@@ -7,10 +7,11 @@
 
     <application
         android:allowBackup="true"
+        android:backupAgent=".utils.BackupAgent"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/Theme.TestTheme.NoActionBar_Fitted">
         <activity
             android:name=".activities.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -21,11 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.EditFolderActivity" />
 
         <service
             android:name=".http.FileUploadIntentService"
             android:exported="false" />
 
+        <meta-data
+            android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAI6a4xiRMqcfLCkIOlotmCmNaJoJvGh6oEZPCAew" />
+
+        <activity android:name=".activities.PhotoSelectorActivity"></activity>
     </application>
 
 </manifest>

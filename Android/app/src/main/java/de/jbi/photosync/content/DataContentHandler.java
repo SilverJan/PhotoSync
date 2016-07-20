@@ -1,7 +1,9 @@
 package de.jbi.photosync.content;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import de.jbi.photosync.domain.Folder;
 
@@ -66,6 +68,24 @@ public class DataContentHandler {
             total += folder.getChildAmount();
         }
         return total;
+    }
+
+    public Folder findFolderById(UUID id) {
+        for (Folder folder : folders) {
+            if (folder.getId().equals(id)) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    public Folder findFolderByPath(File path) {
+        for (Folder folder : folders) {
+            if (folder.getAbsolutePath().equals(path)) {
+                return folder;
+            }
+        }
+        return null;
     }
 
 }
