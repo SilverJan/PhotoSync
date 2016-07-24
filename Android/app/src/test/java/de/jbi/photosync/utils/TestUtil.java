@@ -1,4 +1,4 @@
-package de.jbi.photosync;
+package de.jbi.photosync.utils;
 
 import org.robolectric.RuntimeEnvironment;
 

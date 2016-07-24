@@ -1,6 +1,7 @@
 package de.jbi.photosync.domain;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class PictureVideo {
         this.absolutePath = absolutePath;
         this.name = name;
         this.size = size;
-        this.enabled = true;
+        this.enabled = false; // false per default
     }
 
     public File getAbsolutePath() {
@@ -58,6 +59,17 @@ public class PictureVideo {
         this.enabled = enabled;
     }
 
+    /**
+     * Removes a File instance from device storage. Be careful with that!
+     *
+     * @return True if successful
+     */
+    public void removeFile() throws IOException {
+        if (!absolutePath.delete()) {
+            throw new IOException();
+        }
+    }
+
 
     public static List<PictureVideo> getPicturesAndVideosFromFile(File parentFile) {
         List<File> fileList = AndroidUtil.getAllPhotosAndVideos(parentFile.getAbsoluteFile(), false);
@@ -86,6 +98,7 @@ public class PictureVideo {
 
     /**
      * Returns a new list of PictureVideo instances which enabled property is enabled
+     *
      * @param pictureVideoList
      * @return
      */
@@ -96,6 +109,18 @@ public class PictureVideo {
                 enabledPicVidList.add(picVid);
         }
         return enabledPicVidList;
+    }
+
+    /**
+     * Enables / Disables all medias of the passed list
+     *
+     * @param pictureVideoList The src list
+     * @param newState         The new state (enabled = true) of the medias
+     */
+    public static void changeMediaEnabledState(List<PictureVideo> pictureVideoList, Boolean newState) {
+        for (PictureVideo media : pictureVideoList) {
+            media.setEnabled(newState);
+        }
     }
 
     @Override

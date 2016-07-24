@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.fragment_media_screen_toolbar);
         setSupportActionBar(toolbar);
         if (getApplicationInfo().theme == R.style.Theme_TestTheme_NoActionBar_Fitted) {
             toolbar.setNavigationIcon(R.drawable.ic_menu_white_24dp);

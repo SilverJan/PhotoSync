@@ -31,7 +31,6 @@ import org.jdeferred.FailCallback;
 
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,8 @@ import javax.net.ssl.SSLException;
 
 import de.jbi.photosync.R;
 import de.jbi.photosync.activities.MainActivity;
+import de.jbi.photosync.activities.MediaScreenSlideActivity;
+import de.jbi.photosync.activities.MediaSelectorGridActivity;
 import de.jbi.photosync.activities.PhotoSelectorActivity;
 import de.jbi.photosync.content.ContentUtil;
 import de.jbi.photosync.content.DataContentHandler;
@@ -62,7 +63,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static de.jbi.photosync.utils.Constants.EXTRA_PICTURE_VIDEO_LIST;
+import static de.jbi.photosync.utils.Constants.EXTRA_MEDIA_LIST;
 import static de.jbi.photosync.content.DataContentHandler.getInstance;
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_MISSING_FILES;
 import static de.jbi.photosync.content.SharedPreferencesUtil.META_LAST_SYNC_NEW_FILES;
@@ -123,7 +124,7 @@ public class DashboardFragment extends Fragment implements Observer {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PhotoSelectorActivity.FINISH_PHOTO_SELECTOR_REQUEST_CODE) {
+        if (requestCode == MediaSelectorGridActivity.FINISH_MEDIA_SLIDE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 String obj = data.getStringExtra(Constants.PASS_SYNC_MAX_COUNTER_AFTER_FILE_VALIDATION_INTENT);
                 Type type = new TypeToken<List<PictureVideo>>() {
@@ -136,14 +137,25 @@ public class DashboardFragment extends Fragment implements Observer {
                     SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), maxFilesToUpload);
                     refreshDynamicUI();
                 } else {
+                    // If everything will be synced, this value of missing files is used. Otherwise, there will be onCancelled()
+                    int missingMedia = completePicsVidsToUploadQueue.size() - filesToSyncAfterValidation.size();
+                    SharedPreferencesUtil.addMetaData(new Date(System.currentTimeMillis()), dataContentHandler.getFolders().size(), dataContentHandler.getTotalAmountOfFiles(), missingMedia);
+
                     // Only show progress dialog if there is something to upload
+                    completePicsVidsToUploadQueue.clear();
+                    completePicsVidsToUploadQueue.addAll(filesToSyncAfterValidation);
                     progressDialog.show();
                     progressDialog.setMax(filesToSyncAfterValidation.size());
+                    maxFilesToUpload = filesToSyncAfterValidation.size();
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Pressed back button in PhotoSelectorActivity
+                String obj = data.getStringExtra(Constants.PASS_SYNC_MAX_COUNTER_AFTER_FILE_VALIDATION_INTENT);
+                Type type = new TypeToken<List<PictureVideo>>() {
+                }.getType();
+                List<PictureVideo> filesToSyncAfterValidation = new Gson().fromJson(obj, type);
+                missingFilesToUpload = filesToSyncAfterValidation.size();
                 aborted = true;
-                missingFilesToUpload = maxFilesToUpload;
                 onCancelledSync();
             }
         }
@@ -389,7 +401,7 @@ public class DashboardFragment extends Fragment implements Observer {
                 progressDialog.setProgress(progress);
                 missingFilesToUpload = maxFilesToUpload - progress;
 
-                if (progress == maxFilesToUpload) {
+                if (progress >= maxFilesToUpload) {
                     progressDialog.dismiss();
                     Logger.getInstance().appendLog("Sync successful!", true);
 
@@ -458,12 +470,12 @@ public class DashboardFragment extends Fragment implements Observer {
 
             // STEP 8: Check for pre file validation
             if (SharedPreferencesUtil.getAnyBooleanValue(SettingsFragment.KEY_PREF_FILE_VALIDATION)) {
-                Intent startPhotoSelActIntent = new Intent(ctx, PhotoSelectorActivity.class).putExtra(EXTRA_PICTURE_VIDEO_LIST, new Gson().toJson(completePicsVidsToUploadQueue.toArray()));
-                startActivityForResult(startPhotoSelActIntent, PhotoSelectorActivity.FINISH_PHOTO_SELECTOR_REQUEST_CODE);
+                Intent startMediaSelGridActIntent = new Intent(ctx, MediaSelectorGridActivity.class).putExtra(EXTRA_MEDIA_LIST, new Gson().toJson(completePicsVidsToUploadQueue.toArray()));
+                startActivityForResult(startMediaSelGridActIntent, MediaSelectorGridActivity.FINISH_MEDIA_SLIDE_REQUEST_CODE);
             } else {
                 progressDialog.show();
                 // STEP 9: Upload all pictures from upload list
-                Intent startFileUploadServiceIntent = new Intent(ctx, FileUploadIntentService.class).putExtra(EXTRA_PICTURE_VIDEO_LIST, new Gson().toJson(completePicsVidsToUploadQueue));
+                Intent startFileUploadServiceIntent = new Intent(ctx, FileUploadIntentService.class).putExtra(EXTRA_MEDIA_LIST, new Gson().toJson(completePicsVidsToUploadQueue));
                 ctx.startService(startFileUploadServiceIntent);
             }
         } else {

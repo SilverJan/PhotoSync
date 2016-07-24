@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,9 @@ import de.jbi.photosync.R;
 import de.jbi.photosync.domain.PictureVideo;
 import de.jbi.photosync.http.FileUploadIntentService;
 import de.jbi.photosync.utils.AndroidUtil;
+import de.jbi.photosync.utils.BitmapUtils;
 import de.jbi.photosync.utils.Constants;
+import de.jbi.photosync.utils.Logger;
 
 public class PhotoSelectorActivity extends AppCompatActivity {
     public static final int FINISH_PHOTO_SELECTOR_REQUEST_CODE = 1;
@@ -47,7 +50,7 @@ public class PhotoSelectorActivity extends AppCompatActivity {
         // ### SET INITIAL VALUES ###
         // ##########################
 
-        String obj = getIntent().getStringExtra(Constants.EXTRA_PICTURE_VIDEO_LIST);
+        String obj = getIntent().getStringExtra(Constants.EXTRA_MEDIA_LIST);
         Type type = new TypeToken<PictureVideo[]>() {
         }.getType();
         pictureVideoList = new Gson().fromJson(obj, type);
@@ -135,7 +138,7 @@ public class PhotoSelectorActivity extends AppCompatActivity {
                 } else {
                     // if last media -> sync starts with only enabled media
                     List<PictureVideo> enabledPicVidList = PictureVideo.getEnabledPictureVideos(Arrays.asList(pictureVideoList));
-                    startService(new Intent(getBaseContext(), FileUploadIntentService.class).putExtra(Constants.EXTRA_PICTURE_VIDEO_LIST, new Gson().toJson(enabledPicVidList)));
+                    startService(new Intent(getBaseContext(), FileUploadIntentService.class).putExtra(Constants.EXTRA_MEDIA_LIST, new Gson().toJson(enabledPicVidList)));
                     setResult(RESULT_OK, new Intent().putExtra(Constants.PASS_SYNC_MAX_COUNTER_AFTER_FILE_VALIDATION_INTENT, new Gson().toJson(enabledPicVidList)));
                     finish();
                 }
@@ -144,8 +147,18 @@ public class PhotoSelectorActivity extends AppCompatActivity {
     }
 
     private void setPictureToImageView(int index) {
-        Bitmap recent = AndroidUtil.getBitmapFromFile(pictureVideoList[index].getAbsolutePath());
-        mainImageView.setImageBitmap(recent);
+        File media = pictureVideoList[index].getAbsolutePath();
+        if (AndroidUtil.isFilePicture(media)) {
+            Bitmap recent = BitmapUtils.getBitmapFromFile(pictureVideoList[index].getAbsolutePath());
+            mainImageView.setImageBitmap(recent);
+        } else {
+            Logger.showLogToast("Video not yet implemented..");
+            currentIndex++;
+            if (currentIndex > pictureVideoList.length) {
+                finish();
+            }
+            setPictureToImageView(currentIndex);
+        }
     }
 
     private void updateIndexTextView() {

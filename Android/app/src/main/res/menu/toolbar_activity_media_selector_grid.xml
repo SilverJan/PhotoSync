@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/toolbar_activity_media_selector_grid_sync"
+        android:icon="@drawable/ic_sync_white_24dp"
+        android:title="Sync"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/toolbar_activity_media_selector_grid_select_all"
+        android:title="Select all"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/toolbar_activity_media_selector_grid_deselect_all"
+        android:title="Deselect all"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/toolbar_activity_media_selector_grid_remove_selected"
+        android:title="Remove"
+        app:showAsAction="never"/>
+</menu>

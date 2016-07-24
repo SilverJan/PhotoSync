@@ -46,7 +46,7 @@ public class FileUploadIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         cancelled = false;
 
-        String obj = intent.getStringExtra(Constants.EXTRA_PICTURE_VIDEO_LIST);
+        String obj = intent.getStringExtra(Constants.EXTRA_MEDIA_LIST);
         Type type = new TypeToken<LinkedList<PictureVideo>>() {
         }.getType();
         final Queue<PictureVideo> picVidQueue = new Gson().fromJson(obj, type);

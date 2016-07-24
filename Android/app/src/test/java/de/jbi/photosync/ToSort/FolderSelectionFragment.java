@@ -10,6 +10,8 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.FragmentTestUtil;
 
+import de.jbi.photosync.utils.AbstractUnitTest;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 /**

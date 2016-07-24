@@ -3,6 +3,7 @@
     package="de.jbi.photosync">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -10,6 +11,7 @@
         android:backupAgent=".utils.BackupAgent"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.TestTheme.NoActionBar_Fitted">
         <activity
@@ -23,6 +25,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.EditFolderActivity" />
+        <activity android:name=".activities.MediaScreenSlideActivity" />
+        <activity android:name=".activities.PhotoSelectorActivity" />
 
         <service
             android:name=".http.FileUploadIntentService"
@@ -32,7 +36,7 @@
             android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAI6a4xiRMqcfLCkIOlotmCmNaJoJvGh6oEZPCAew" />
 
-        <activity android:name=".activities.PhotoSelectorActivity"></activity>
+        <activity android:name=".activities.MediaSelectorGridActivity"></activity>
     </application>
 
 </manifest>

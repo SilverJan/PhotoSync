@@ -7,16 +7,12 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.jbi.photosync.domain.PictureVideo;
 
 /**
  * Created by Jan on 13.05.2016.
@@ -32,23 +28,18 @@ public class AndroidUtil {
         return false;
     }
 
-    public static Bitmap getBitmapFromFile(File src) {
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(src.getAbsolutePath(),bmOptions);
-        return Bitmap.createScaledBitmap(bitmap,bitmap.getScaledWidth(500),bitmap.getScaledHeight(500),true);
-    }
-
     /**
      * Returns a formatted human readable byte count string
+     *
      * @param bytes
-     * @param si some way of formatting. Just pass true^^
+     * @param si    some way of formatting. Just pass true^^
      * @return
      */
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
@@ -68,13 +59,33 @@ public class AndroidUtil {
                     inFiles.addAll(getAllPhotosAndVideos(file, true));
                 }
             } else {
-                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg") || file.getName().endsWith(".png") ||
-                file.getName().endsWith(".mp4") || file.getName().endsWith(".wmv")) {
+                if (isFilePicture(file) || isFileVideo(file)) {
                     inFiles.add(file);
                 }
             }
         }
         return inFiles;
+    }
+
+    /**
+     * Returns true, if File is .jepg, .jpg, .png
+     *
+     * @param dir
+     * @return
+     */
+    public static Boolean isFilePicture(File dir) {
+        return dir.getName().endsWith(".jpg") || dir.getName().endsWith(".jpeg") || dir.getName().endsWith(".png");
+    }
+
+
+    /**
+     * Returns true, if File is .jepg, .jpg, .png
+     *
+     * @param dir
+     * @return
+     */
+    public static Boolean isFileVideo(File dir) {
+        return dir.getName().endsWith(".mp4") || dir.getName().endsWith(".wmv");
     }
 
     /**
@@ -127,6 +138,7 @@ public class AndroidUtil {
         public static void setMainContext(Context ctx) {
             mainCtx = ctx;
         }
+
         public static Context getMainContext() {
             if (mainCtx == null) {
                 throw new ExceptionInInitializerError("Context is not set! First call setMainContext() in MainActivity!");
